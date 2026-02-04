@@ -1,0 +1,91 @@
+# PARAGON COMMUNICATIONS - Git Ignore File
+# Prevent sensitive data from being committed
+
+# Environment Configuration (SENSITIVE!)
+config/.env
+config/.env.local
+config/.env.*.local
+
+# Composer dependencies
+vendor/
+composer.lock
+
+# Log files
+*.log
+logs/
+error_log
+
+# Cache files
+cache/
+*.cache
+.cache
+
+# Session files
+sessions/
+tmp/
+
+# IDE/Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+*.sublime-project
+*.sublime-workspace
+
+# OS files
+.DS_Store
+.env.local
+.env.*.local
+.editorconfig
+
+# Backup files
+*.bak
+*.backup
+*.old
+~*
+
+# Database dumps
+*.sql
+!config/database_schema.sql
+
+# Upload directories (if applicable)
+uploads/
+downloads/
+
+# Node modules (if using frontend tools)
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Build/compiled files
+dist/
+build/
+
+# Test files
+test-coverage/
+.phpunit.result.cache
+
+# Configuration overrides
+config/local-config.php
+
+# Google credentials (if storing locally)
+google-credentials.json
+client_secret.json
+
+# Email templates (if sensitive)
+email-templates/sensitive/
+
+# Database backups
+backups/
+*.dump
+
+# Documentation builds
+docs/build/
+
+# Hidden files (mostly OSX)
+.AppleDouble
+.LSOverride
+._*
