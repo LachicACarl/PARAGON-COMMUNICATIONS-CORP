@@ -11,6 +11,6 @@ $_SESSION['username'] = "Head Admin";
 $_SESSION['email'] = "admin@paragon.com";
 
 // Redirect to dashboard (go up one directory level)
-header("Location: dashboard.php");
+header("Location: ../dashboard.php");
 exit();
 ?>

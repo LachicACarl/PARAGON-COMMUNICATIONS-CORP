@@ -41,11 +41,12 @@ unset($_SESSION['error']);
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #ffffff;
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
+            padding: 20px;
         }
         
         .login-container {
@@ -56,32 +57,35 @@ unset($_SESSION['error']);
         }
         
         .login-box {
-            background: white;
-            padding: 50px;
-            border-radius: 15px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            background: #186bb2;
+            padding: 60px 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             width: 100%;
-            max-width: 450px;
+            max-width: 500px;
             text-align: center;
         }
         
         .logo {
-            width: 100px;
-            height: 100px;
+            width: 150px;
+            height: 46px;
             margin-bottom: 20px;
             object-fit: contain;
         }
         
         .login-box h1 {
-            color: #333;
-            margin-bottom: 10px;
-            font-size: 28px;
+            color: #ffffff;
+            margin-bottom: 15px;
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: 1px;
         }
         
         .login-box p {
-            color: #666;
-            margin-bottom: 30px;
-            font-size: 14px;
+            color: #e8f0f7;
+            margin-bottom: 35px;
+            font-size: 15px;
+            line-height: 1.6;
         }
         
         .error-message {
@@ -98,9 +102,9 @@ unset($_SESSION['error']);
             padding: 14px;
             background: white;
             color: #333;
-            border: 2px solid #667eea;
+            border: none;
             border-radius: 8px;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 600;
             cursor: pointer;
             display: flex;
@@ -108,19 +112,59 @@ unset($_SESSION['error']);
             justify-content: center;
             gap: 10px;
             transition: all 0.3s ease;
-            margin-bottom: 15px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
         
         .google-btn:hover {
-            background: #667eea;
-            color: white;
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
         }
         
         .google-icon {
             width: 20px;
             height: 20px;
+        }
+        
+        .admin-login {
+            margin-bottom: 25px;
+        }
+        
+        .admin-login a {
+            color: #4EE9FF;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.3s ease;
+            border-bottom: 1px solid rgba(168, 212, 247, 0.5);
+            padding-bottom: 2px;
+        }
+        
+        .admin-login a:hover {
+            color: #ffffff;
+            border-bottom-color: #ffffff;
+        }
+        
+        .signup-section {
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            padding-top: 25px;
+        }
+        
+        .signup-section p {
+            color: #e8f0f7;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .signup-section a {
+            color: #a8d4f7;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+        
+        .signup-section a:hover {
+            color: #ffffff;
         }
     </style>
 </head>
@@ -128,10 +172,10 @@ unset($_SESSION['error']);
     <div class="login-container">
         <div class="login-box">
             <!-- LOGO -->
-            <img src="assets/download.png" class="logo" alt="Paragon Logo">
+            <img src="assets/image.png" class="logo" alt="Paragon Logo">
             
-            <h1>PARAGON</h1>
-            <p>Management & Communications System</p>
+            <h1>Login</h1>
+            <p>Use your Google account to continue. If you don't have access yet, request it on Sign up.</p>
             
             <?php if ($error): ?>
                 <div class="error-message"><?php echo htmlspecialchars($error); ?></div>
@@ -139,13 +183,27 @@ unset($_SESSION['error']);
             
             <!-- Google OAuth Login Button -->
             <a href="<?php echo htmlspecialchars($googleAuthUrl); ?>" style="text-decoration: none;">
-                <button class="google-btn">
+                <button class="google-btn" type="button">
                     <svg class="google-icon" viewBox="0 0 24 24">
-                        <path fill="currentColor" d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.834 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v 3.293c0 .319.192.694.801.576 4.765-1.559 8.179-6.086 8.179-11.384 0-6.627-5.373-12-12-12z"/>
+                        <path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.34H12v4.43h6.44a5.5 5.5 0 0 1-2.39 3.62v3h3.87c2.26-2.08 3.57-5.15 3.57-8.71z"/>
+                        <path fill="#34A853" d="M12 24c3.24 0 5.95-1.07 7.93-2.9l-3.87-3c-1.07.72-2.45 1.15-4.06 1.15-3.12 0-5.76-2.1-6.7-4.94H1.3v3.1A12 12 0 0 0 12 24z"/>
+                        <path fill="#FBBC05" d="M5.3 14.31A7.2 7.2 0 0 1 4.92 12c0-.8.14-1.57.38-2.31v-3.1H1.3A12 12 0 0 0 0 12c0 1.94.46 3.77 1.3 5.41l4-3.1z"/>
+                        <path fill="#EA4335" d="M12 4.75c1.77 0 3.36.61 4.62 1.8l3.46-3.46C17.95.86 15.24 0 12 0A12 12 0 0 0 1.3 6.59l4 3.1C6.24 6.85 8.88 4.75 12 4.75z"/>
                     </svg>
-                    Sign in with Google
+                    Continue with Google
                 </button>
             </a>
+            
+            <!-- Admin Login Link -->
+            <div class="admin-login">
+                <a href="admin-login.php">Login as Head Admin</a>
+            </div>
+            
+            <!-- Sign Up Section -->
+            <div class="signup-section">
+                <p>Need Access? <a href="register.php">Sign Up</a></p>
+                <p style="font-size: 12px; margin-top: 5px;">You may be asked to choose an account.</p>
+            </div>
         </div>
     </div>
 </body>

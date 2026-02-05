@@ -1,133 +1,33 @@
 <?php
 /**
- * PARAGON COMMUNICATIONS - User Registration & Email Verification
+ * PARAGON COMMUNICATIONS - User Registration with Role Selection
  */
 
 session_start();
 require_once __DIR__ . '/config/config.php';
 require_once __DIR__ . '/config/database.php';
 
-// Check if user has Google data
-if (!isset($_SESSION['google_user_data'])) {
-    header("Location: login.php");
-    exit();
-}
-
-$googleData = $_SESSION['google_user_data'];
-$step = $_GET['step'] ?? 'verify-email';
-$message = '';
 $error = '';
+$selectedRole = $_POST['role'] ?? 'Admin';
 
-// Handle email verification
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['action']) && $_POST['action'] === 'send-verification') {
-        // Send verification email
-        $verificationToken = bin2hex(random_bytes(32));
-        $tokenExpires = date('Y-m-d H:i:s', time() + 3600); // 1 hour
-        
-        $_SESSION['google_user_data']['verification_token'] = $verificationToken;
-        $_SESSION['google_user_data']['token_expires'] = $tokenExpires;
-        
-        // TODO: Send email with verification link
-        // sendVerificationEmail($googleData['email'], $verificationToken);
-        
-        $message = "Verification email sent to " . htmlspecialchars($googleData['email']);
-        $step = 'confirm-token';
-    }
+// Handle role selection and Google OAuth redirect
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['role'])) {
+    // Store selected role in session
+    $_SESSION['selected_role'] = $_POST['role'];
     
-    elseif (isset($_POST['action']) && $_POST['action'] === 'confirm-token') {
-        // Verify token
-        $inputToken = trim($_POST['verification_token'] ?? '');
-        $storedToken = $_SESSION['google_user_data']['verification_token'] ?? '';
-        $tokenExpires = $_SESSION['google_user_data']['token_expires'] ?? '';
-        
-        if (empty($inputToken)) {
-            $error = "Please enter the verification code.";
-        } elseif ($inputToken !== $storedToken) {
-            $error = "Invalid verification code.";
-        } elseif (strtotime($tokenExpires) < time()) {
-            $error = "Verification code has expired.";
-        } else {
-            // Token is valid - proceed to role selection
-            $_SESSION['google_user_data']['email_verified'] = true;
-            $step = 'select-role';
-            $message = "Email verified successfully!";
-        }
-    }
+    // Build Google OAuth URL with state
+    $googleAuthUrl = 'https://accounts.google.com/o/oauth2/v2/auth?' . http_build_query([
+        'client_id' => GOOGLE_CLIENT_ID,
+        'redirect_uri' => GOOGLE_REDIRECT_URI,
+        'response_type' => 'code',
+        'scope' => 'openid email profile',
+        'access_type' => 'offline',
+        'state' => bin2hex(random_bytes(16))
+    ]);
     
-    elseif (isset($_POST['action']) && $_POST['action'] === 'select-role') {
-        // User selected a role - create account
-        $selectedRole = $_POST['role'] ?? 'user';
-        $validRoles = ['user', 'admin', 'manager'];
-        
-        if (!in_array($selectedRole, $validRoles)) {
-            $error = "Invalid role selected.";
-        } else {
-            try {
-                // Check if user already exists
-                $existing = getRow($pdo, "SELECT id FROM users WHERE email = ? OR google_id = ?",
-                                 [$googleData['email'], $googleData['google_id']]);
-                
-                if ($existing) {
-                    $error = "User with this email already exists.";
-                } else {
-                    // Determine initial status based on role
-                    $status = ($selectedRole === 'user') ? 'active' : 'inactive'; // Admins need approval
-                    
-                    // Create user account
-                    $userId = insert($pdo, 'users', [
-                        'google_id' => $googleData['google_id'],
-                        'email' => $googleData['email'],
-                        'first_name' => $googleData['first_name'],
-                        'last_name' => $googleData['last_name'],
-                        'profile_picture' => $googleData['profile_picture'],
-                        'role' => $selectedRole,
-                        'status' => $status,
-                        'email_verified' => 1
-                    ]);
-                    
-                    // Store OAuth session
-                    insert($pdo, 'oauth_sessions', [
-                        'user_id' => $userId,
-                        'access_token' => $googleData['access_token'],
-                        'refresh_token' => $googleData['refresh_token'],
-                        'token_expires' => $googleData['token_expires']
-                    ]);
-                    
-                    // If admin or manager, create admin_accounts record for approval
-                    if ($selectedRole !== 'user') {
-                        insert($pdo, 'admin_accounts', [
-                            'user_id' => $userId,
-                            'approval_status' => 'pending'
-                        ]);
-                    }
-                    
-                    // Set session variables
-                    $_SESSION['user_id'] = $userId;
-                    $_SESSION['email'] = $googleData['email'];
-                    $_SESSION['first_name'] = $googleData['first_name'];
-                    $_SESSION['last_name'] = $googleData['last_name'];
-                    $_SESSION['role'] = $selectedRole;
-                    $_SESSION['logged_in'] = true;
-                    $_SESSION['username'] = trim($googleData['first_name'] . ' ' . $googleData['last_name']);
-                    
-                    // Clear Google data from session
-                    unset($_SESSION['google_user_data']);
-                    
-                    // Redirect to dashboard or approval page
-                    if ($selectedRole === 'user') {
-                        header("Location: dashboard.php");
-                    } else {
-                        header("Location: dashboard.php?pending-approval=true");
-                    }
-                    exit();
-                }
-            } catch (Exception $e) {
-                error_log("Registration Error: " . $e->getMessage());
-                $error = "Registration failed. Please try again.";
-            }
-        }
-    }
+    // Redirect to Google OAuth
+    header("Location: " . $googleAuthUrl);
+    exit();
 }
 
 ?>
@@ -139,26 +39,54 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>PARAGON - Complete Registration</title>
     <link rel="stylesheet" href="assets/style.css">
     <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f3f6fb;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
         .register-container {
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            width: 100%;
         }
         
         .register-box {
-            background: white;
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            background: #1b6fb2;
+            padding: 55px 40px;
+            border-radius: 22px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
             width: 100%;
-            max-width: 500px;
+            max-width: 520px;
+            text-align: center;
+            color: #ffffff;
+        }
+
+        .logo {
+            width: 150px;
+            height: 46px;
+            margin: 0 auto 20px;
+            object-fit: contain;
+            display: block;
         }
         
         .register-box h2 {
             text-align: center;
-            color: #333;
+            color: #ffffff;
+            margin-bottom: 10px;
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            color: #e7f0f8;
+            font-size: 15px;
+            line-height: 1.6;
             margin-bottom: 30px;
         }
         
@@ -169,51 +97,65 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .form-group label {
             display: block;
             margin-bottom: 8px;
-            color: #555;
-            font-weight: 500;
+            color: #e7f0f8;
+            font-weight: 600;
+            text-align: left;
         }
         
         .form-group input,
         .form-group select,
         .form-group textarea {
             width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+            padding: 12px 14px;
+            border: 1px solid #dfe7ef;
+            border-radius: 8px;
             font-size: 14px;
             box-sizing: border-box;
+            background: #ffffff;
         }
         
         .form-group input:focus,
         .form-group select:focus,
         .form-group textarea:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            border-color: #4EE9FF;
+            box-shadow: 0 0 0 3px rgba(78, 233, 255, 0.25);
         }
         
-        .btn {
+        .primary-btn {
             width: 100%;
-            padding: 12px;
-            background: #667eea;
-            color: white;
+            padding: 12px 16px;
+            background: #ffffff;
+            color: #333;
             border: none;
-            border-radius: 5px;
-            font-size: 16px;
+            border-radius: 8px;
+            font-size: 15px;
             font-weight: 600;
             cursor: pointer;
-            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+            margin-top: 20px;
         }
-        
-        .btn:hover {
-            background: #5568d3;
+
+        .primary-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+        }
+
+        .google-btn {
+            margin-top: 15px;
         }
         
         .message {
             padding: 12px;
             margin-bottom: 20px;
-            border-radius: 5px;
+            border-radius: 8px;
             text-align: center;
+            font-size: 14px;
         }
         
         .message.success {
@@ -229,132 +171,74 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         
         .user-info {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.12);
+            padding: 12px 16px;
+            border-radius: 8px;
             margin-bottom: 20px;
+            text-align: left;
         }
         
         .user-info p {
-            margin: 5px 0;
-            color: #555;
+            margin: 4px 0;
+            color: #e7f0f8;
+            font-size: 13px;
         }
-        
-        .role-options {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
+
+        .google-icon {
+            width: 20px;
+            height: 20px;
         }
-        
-        .role-option {
-            display: flex;
-            align-items: center;
-            padding: 15px;
-            border: 2px solid #ddd;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.3s ease;
+
+        .signin-link {
+            margin-top: 22px;
+            color: #e7f0f8;
+            font-size: 14px;
         }
-        
-        .role-option:hover {
-            border-color: #667eea;
-            background: #f8f9ff;
+
+        .signin-link a {
+            color: #4EE9FF;
+            text-decoration: none;
+            font-weight: 600;
         }
-        
-        .role-option input[type="radio"] {
-            width: auto;
-            margin-right: 15px;
-            cursor: pointer;
-        }
-        
-        .role-option label {
-            margin: 0;
-            cursor: pointer;
+
+        .signin-link a:hover {
+            color: #ffffff;
         }
     </style>
 </head>
 <body>
     <div class="register-container">
         <div class="register-box">
-            <h2>PARAGON - Complete Registration</h2>
-            
-            <?php if ($message): ?>
-                <div class="message success"><?php echo htmlspecialchars($message); ?></div>
-            <?php endif; ?>
+            <img src="assets/image.png" class="logo" alt="Paragon Logo">
+            <h2>Request Access</h2>
+            <p class="subtitle">Choose your role and continue with Google. An admin will approve your access.</p>
             
             <?php if ($error): ?>
                 <div class="message error"><?php echo htmlspecialchars($error); ?></div>
             <?php endif; ?>
             
-            <!-- User Info Display -->
-            <div class="user-info">
-                <p><strong>Email:</strong> <?php echo htmlspecialchars($googleData['email']); ?></p>
-                <p><strong>Name:</strong> <?php echo htmlspecialchars($googleData['first_name'] . ' ' . $googleData['last_name']); ?></p>
-            </div>
-            
-            <!-- Step 1: Verify Email -->
-            <?php if ($step === 'verify-email'): ?>
-                <form method="POST">
-                    <input type="hidden" name="action" value="send-verification">
-                    <p style="text-align: center; color: #666; margin-bottom: 20px;">
-                        We'll send a verification code to your email address.
-                    </p>
-                    <button type="submit" class="btn">Send Verification Code</button>
-                </form>
-            <?php endif; ?>
-            
-            <!-- Step 2: Confirm Token -->
-            <?php if ($step === 'confirm-token'): ?>
-                <form method="POST">
-                    <input type="hidden" name="action" value="confirm-token">
-                    <div class="form-group">
-                        <label for="verification_token">Verification Code</label>
-                        <input type="text" id="verification_token" name="verification_token" 
-                               placeholder="Enter the code from your email" required>
-                    </div>
-                    <button type="submit" class="btn">Verify Email</button>
-                    <button type="button" class="btn" style="background: #6c757d; margin-top: 5px;" 
-                            onclick="location.href='register.php'">Back</button>
-                </form>
-            <?php endif; ?>
-            
-            <!-- Step 3: Select Role -->
-            <?php if ($step === 'select-role'): ?>
-                <form method="POST">
-                    <input type="hidden" name="action" value="select-role">
-                    <p style="text-align: center; color: #666; margin-bottom: 20px;">
-                        Select your role in the PARAGON system:
-                    </p>
-                    
-                    <div class="role-options">
-                        <label class="role-option">
-                            <input type="radio" name="role" value="user" required>
-                            <div>
-                                <strong>Regular User</strong>
-                                <p style="font-size: 12px; color: #999; margin: 0;">View assigned accounts and data</p>
-                            </div>
-                        </label>
-                        
-                        <label class="role-option">
-                            <input type="radio" name="role" value="manager" required>
-                            <div>
-                                <strong>Manager</strong>
-                                <p style="font-size: 12px; color: #999; margin: 0;">Manage accounts and generate reports (requires approval)</p>
-                            </div>
-                        </label>
-                        
-                        <label class="role-option">
-                            <input type="radio" name="role" value="admin" required>
-                            <div>
-                                <strong>Administrator</strong>
-                                <p style="font-size: 12px; color: #999; margin: 0;">Full system access (requires Head Admin approval)</p>
-                            </div>
-                        </label>
-                    </div>
-                    
-                    <button type="submit" class="btn" style="margin-top: 30px;">Create Account</button>
-                </form>
-            <?php endif; ?>
+            <!-- Role Selection Form -->
+            <form method="POST">
+                <div class="form-group">
+                    <label for="role" style="text-align: center; margin-bottom: 12px;">Request Access as</label>
+                    <select id="role" name="role" required>
+                        <option value="Admin">Admin</option>
+                        <option value="Manager">Manager</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="primary-btn google-btn">
+                    <svg class="google-icon" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.34H12v4.43h6.44a5.5 5.5 0 0 1-2.39 3.62v3h3.87c2.26-2.08 3.57-5.15 3.57-8.71z"/>
+                        <path fill="#34A853" d="M12 24c3.24 0 5.95-1.07 7.93-2.9l-3.87-3c-1.07.72-2.45 1.15-4.06 1.15-3.12 0-5.76-2.1-6.7-4.94H1.3v3.1A12 12 0 0 0 12 24z"/>
+                        <path fill="#FBBC05" d="M5.3 14.31A7.2 7.2 0 0 1 4.92 12c0-.8.14-1.57.38-2.31v-3.1H1.3A12 12 0 0 0 0 12c0 1.94.46 3.77 1.3 5.41l4-3.1z"/>
+                        <path fill="#EA4335" d="M12 4.75c1.77 0 3.36.61 4.62 1.8l3.46-3.46C17.95.86 15.24 0 12 0A12 12 0 0 0 1.3 6.59l4 3.1C6.24 6.85 8.88 4.75 12 4.75z"/>
+                    </svg>
+                    Continue with Google
+                </button>
+            </form>
+
+            <div class="signin-link">Already have access? <a href="login.php">Log In</a></div>
         </div>
     </div>
 </body>

@@ -111,20 +111,65 @@ try {
         exit();
     }
     
-    // New user - redirect to registration for verification
-    $_SESSION['google_user_data'] = [
+    // New user - create account with role selected in register.php
+    $firstName = $userInfo['given_name'] ?? '';
+    $lastName = $userInfo['family_name'] ?? '';
+    $profilePicture = $userInfo['picture'] ?? '';
+    
+    // Get selected role from session (from register.php)
+    $selectedRole = $_SESSION['selected_role'] ?? 'user';
+    $validRoles = ['Admin', 'Manager', 'User', 'admin', 'manager', 'user'];
+    if (!in_array($selectedRole, $validRoles)) {
+        $selectedRole = 'user';
+    }
+    
+    // Normalize role to lowercase for storage
+    $roleMap = [
+        'Admin' => 'admin',
+        'Manager' => 'manager',
+        'User' => 'user',
+        'admin' => 'admin',
+        'manager' => 'manager',
+        'user' => 'user'
+    ];
+    $normalizedRole = $roleMap[$selectedRole] ?? 'user';
+    
+    // Create new user account (auto-active for all roles)
+    $userId = insert($pdo, 'users', [
         'google_id' => $userInfo['id'],
         'email' => $userInfo['email'],
-        'first_name' => $userInfo['given_name'] ?? '',
-        'last_name' => $userInfo['family_name'] ?? '',
-        'profile_picture' => $userInfo['picture'] ?? '',
+        'first_name' => $firstName,
+        'last_name' => $lastName,
+        'profile_picture' => $profilePicture,
+        'role' => $normalizedRole,
+        'status' => 'active',
+        'email_verified' => 1,
+        'created_at' => date('Y-m-d H:i:s'),
+        'last_login' => date('Y-m-d H:i:s')
+    ]);
+    
+    // Store OAuth session
+    insert($pdo, 'oauth_sessions', [
+        'user_id' => $userId,
         'access_token' => $accessToken,
         'refresh_token' => $tokenData['refresh_token'] ?? null,
         'token_expires' => date('Y-m-d H:i:s', time() + ($tokenData['expires_in'] ?? 3600))
-    ];
+    ]);
     
-    // Redirect to registration/confirmation page
-    header("Location: " . APP_URL . "/register.php?step=verify-email");
+    // Set session variables and log in user
+    $_SESSION['user_id'] = $userId;
+    $_SESSION['email'] = $userInfo['email'];
+    $_SESSION['first_name'] = $firstName;
+    $_SESSION['last_name'] = $lastName;
+    $_SESSION['role'] = $normalizedRole;
+    $_SESSION['logged_in'] = true;
+    $_SESSION['username'] = trim($firstName . ' ' . $lastName);
+    
+    // Clear selected role from session
+    unset($_SESSION['selected_role']);
+    
+    // Redirect to dashboard
+    header("Location: " . APP_URL . "/dashboard.php");
     exit();
     
 } catch (Exception $e) {
