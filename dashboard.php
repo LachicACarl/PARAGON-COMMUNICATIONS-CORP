@@ -48,6 +48,23 @@ if (isHeadAdmin()) {
     
     // Get pending approvals
     $pendingApprovals = getPendingApprovals($pdo);
+    
+    // Get all client accounts with user details for Head Admin
+    $clientAccounts = getAll($pdo, "
+        SELECT 
+            ca.*,
+            u1.first_name as created_by_first_name,
+            u1.last_name as created_by_last_name,
+            u1.role as created_by_role,
+            u2.first_name as managed_by_first_name,
+            u2.last_name as managed_by_last_name,
+            u2.role as managed_by_role
+        FROM client_accounts ca
+        LEFT JOIN users u1 ON ca.created_by = u1.id
+        LEFT JOIN users u2 ON ca.managed_by = u2.id
+        ORDER BY ca.created_at DESC
+        LIMIT 100
+    ");
 }
 elseif (isAdmin()) {
     // Admin gets their managed clients statistics
@@ -360,6 +377,40 @@ $recentActivities = getAll($pdo, "
             text-transform: uppercase;
         }
         
+        .status-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status-dormant {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .status-inactive {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status-pending {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
         .no-data {
             text-align: center;
             color: #999;
@@ -391,22 +442,6 @@ $recentActivities = getAll($pdo, "
                         <a href="admin/visit-remarks.php">VISIT REMARKS</a>
                         <a href="admin/daily-count.php">DAILY COUNT STATUS</a>
                         <a href="admin/s25-report.php">S25 PLAN REPORT</a>
-                    </li>
-                <?php endif; ?>
-                
-                <?php if (isAdmin()): ?>
-                    <li class="menu-section">
-                        <div class="menu-title">ADMIN</div>
-                        <a href="reports/index.php">REPORTING</a>
-                        <a href="import/upload.php">MASTERLIST MONITORING</a>
-                        <a href="clients/callout.php">CALL OUT DORMANTS</a>
-                    </li>
-                <?php endif; ?>
-                
-                <?php if (isManager()): ?>
-                    <li class="menu-section">
-                        <div class="menu-title">MANAGER</div>
-                        <a href="reports/index.php">REPORTING</a>
                     </li>
                 <?php endif; ?>
                 
@@ -501,6 +536,67 @@ $recentActivities = getAll($pdo, "
                     <p class="no-data">No recent activities</p>
                 <?php endif; ?>
             </div>
+            
+            <!-- HEAD ADMIN: CLIENT ACCOUNTS TABLE -->
+            <?php if (isHeadAdmin() && !empty($clientAccounts)): ?>
+            <div class="section">
+                <h2>Client Accounts - Complete Overview</h2>
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Client Name</th>
+                                <th>Account of User Admin/Manager</th>
+                                <th>Address</th>
+                                <th>Amount Paid</th>
+                                <th>Installation Fee</th>
+                                <th>Call Out Status</th>
+                                <th>Pull Out Remarks</th>
+                                <th>Status Input Channel</th>
+                                <th>Sales Category</th>
+                                <th>Main Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($clientAccounts as $account): ?>
+                                <?php
+                                    // Build account admin/manager string
+                                    $accountOwner = '';
+                                    if (!empty($account['created_by_first_name'])) {
+                                        $accountOwner = htmlspecialchars($account['created_by_first_name'] . ' ' . $account['created_by_last_name']);
+                                        $accountOwner .= ' (' . htmlspecialchars(ucfirst(str_replace('_', ' ', $account['created_by_role']))) . ')';
+                                    }
+                                    if (!empty($account['managed_by_first_name']) && $account['managed_by'] != $account['created_by']) {
+                                        if ($accountOwner) $accountOwner .= '<br>';
+                                        $accountOwner .= htmlspecialchars($account['managed_by_first_name'] . ' ' . $account['managed_by_last_name']);
+                                        $accountOwner .= ' (' . htmlspecialchars(ucfirst(str_replace('_', ' ', $account['managed_by_role']))) . ')';
+                                    }
+                                    if (empty($accountOwner)) {
+                                        $accountOwner = '-';
+                                    }
+                                ?>
+                                <tr>
+                                    <td><strong><?php echo htmlspecialchars($account['client_name']); ?></strong></td>
+                                    <td><?php echo $accountOwner; ?></td>
+                                    <td style="max-width: 250px; white-space: normal;"><?php echo htmlspecialchars($account['address'] ?? '-'); ?></td>
+                                    <td><?php echo formatCurrency($account['amount_paid'] ?? 0); ?></td>
+                                    <td><?php echo formatCurrency($account['installation_fee'] ?? 0); ?></td>
+                                    <td>
+                                        <span class="status-badge status-<?php echo $account['call_out_status']; ?>">
+                                            <?php echo htmlspecialchars(ucfirst($account['call_out_status'] ?? 'pending')); ?>
+                                        </span>
+                                    </td>
+                                    <td style="max-width: 200px; white-space: normal;"><?php echo htmlspecialchars($account['pull_out_remarks'] ?? '-'); ?></td>
+                                    <td><?php echo htmlspecialchars($account['status_input_channel'] ?? '-'); ?></td>
+                                    <td><?php echo htmlspecialchars($account['sales_category'] ?? '-'); ?></td>
+                                    <td style="max-width: 250px; white-space: normal;"><?php echo htmlspecialchars($account['main_remarks'] ?? '-'); ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <?php endif; ?>
         </div>
     </div>
 </body>
