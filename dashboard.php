@@ -99,505 +99,163 @@ $recentActivities = getAll($pdo, "
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PARAGON Dashboard</title>
-    <link rel="stylesheet" href="assets/style.css">
-    <style>
-        .dashboard {
-            display: flex;
-            min-height: 100vh;
-            background: #f4f6fb;
-        }
-        
-        .sidebar {
-            width: 176px;
-            background: #1565a0;
-            color: #ffffff;
-            padding: 18px 12px;
-            position: fixed;
-            height: 100vh;
-            overflow-y: auto;
-            overflow-x: hidden;
-            top: 0;
-            left: 0;
-            z-index: 100;
-        }
-
-        .sidebar::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .sidebar::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .sidebar::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 3px;
-        }
-
-        .sidebar::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.5);
-        }
-
-        .sidebar-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 30px;
-        }
-
-        .sidebar-logo {
-            width: 140px;
-            height: 40px;
-            object-fit: contain;
-        }
-
-        .menu-toggle {
-            width: 36px;
-            height: 36px;
-            border-radius: 8px;
-            border: none;
-            background: rgba(255, 255, 255, 0.2);
-            color: #fff;
-            font-size: 18px;
-        }
-        
-        .sidebar ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        
-        .sidebar li {
-            margin-bottom: 10px;
-        }
-        
-        .sidebar a {
-            color: #e8f3ff;
-            text-decoration: none;
-            display: block;
-            padding: 10px 15px;
-            border-radius: 5px;
-            transition: all 0.3s ease;
-        }
-        
-        .sidebar a.active {
-            background: rgba(255, 255, 255, 0.25);
-            border-left: 4px solid #4EE9FF;
-            padding-left: 11px;
-        }
-        
-        .main {
-            margin-left: 176px;
-            padding: 25px 30px;
-            width: calc(100% - 176px);
-        }
-        
-        .header {
-            background: transparent;
-            padding: 0 0 20px 0;
-            margin-bottom: 25px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .header-title h1 {
-            color: #2573b6;
-            margin: 0;
-            font-size: 18px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-        }
-
-        .header-title p {
-            margin: 3px 0 0;
-            color: #6b7a90;
-            font-size: 13px;
-        }
-
-        .user-profile {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .avatar {
-            width: 42px;
-            height: 42px;
-            border-radius: 50%;
-            background: #ffd29c;
-            color: #1b3b5f;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-        }
-
-        .user-info {
-            text-align: left;
-            font-size: 13px;
-        }
-        
-        .user-info p {
-            color: #666;
-            margin: 0;
-        }
-        
-        .cards {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 18px;
-            margin-bottom: 28px;
-        }
-        
-        .card {
-            background: white;
-            padding: 18px 16px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            border: 1px solid #e8eef8;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .card-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            background: #e8f2fc;
-            color: #1565a0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            flex-shrink: 0;
-            margin-bottom: 10px;
-        }
-        
-        .card h3 {
-            color: #555;
-            font-size: 12px;
-            margin: 0;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-weight: 600;
-            line-height: 1.3;
-        }
-        
-        .card .value {
-            color: #333;
-            font-size: 24px;
-            font-weight: bold;
-            margin: 8px 0 0;
-        }
-
-        .section-title {
-            color: #333;
-            font-size: 14px;
-            font-weight: 600;
-            margin: 0 0 18px;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-        }
-        
-        .section {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 30px;
-            box-shadow: 0 6px 18px rgba(0,0,0,0.08);
-        }
-        
-        .section h2 {
-            color: #1b3b5f;
-            border-bottom: 2px solid #e6edf5;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-        }
-        
-        .menu-section {
-            margin-bottom: 25px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        
-        .menu-section:last-child {
-            border-bottom: none;
-        }
-        
-        .menu-title {
-            font-size: 12px;
-            text-transform: uppercase;
-            color: rgba(255, 255, 255, 0.7);
-            margin-bottom: 10px;
-            font-weight: 600;
-            letter-spacing: 1px;
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-        }
-        
-        table th {
-            background: #f5f5f5;
-            padding: 12px;
-            text-align: left;
-            color: #333;
-            font-weight: 600;
-            border-bottom: 2px solid #ddd;
-        }
-        
-        table td {
-            padding: 12px;
-            border-bottom: 1px solid #eee;
-            color: #666;
-        }
-        
-        table tr:hover {
-            background: #f9f9f9;
-        }
-        
-        .role-badge {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 3px;
-            font-size: 12px;
-            font-weight: 600;
-            background: #1b6fb2;
-            color: white;
-            text-transform: uppercase;
-        }
-        
-        .status-badge {
-            display: inline-block;
-            padding: 5px 10px;
-            border-radius: 4px;
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .status-active {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        
-        .status-dormant {
-            background: #fff3cd;
-            color: #856404;
-            border: 1px solid #ffeaa7;
-        }
-        
-        .status-inactive {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        
-        .status-pending {
-            background: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
-        }
-        
-        .no-data {
-            text-align: center;
-            color: #999;
-            padding: 20px;
-            font-style: italic;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Backend Management Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/chart.js" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f8f9fa;
+    }
+    .sidebar {
+      width: 220px;
+      background-color: #1565c0;
+      color: white;
+      height: 100vh;
+      position: fixed;
+      display: flex;
+      flex-direction: column;
+      padding-top: 20px;
+    }
+    .sidebar h2 {
+      text-align: center;
+      font-size: 18px;
+      margin-bottom: 30px;
+    }
+    .sidebar a {
+      text-decoration: none;
+      color: white;
+      padding: 10px 20px;
+      display: block;
+      transition: 0.3s;
+    }
+    .sidebar a:hover {
+      background-color: #0d47a1;
+    }
+    .main-content {
+      margin-left: 220px;
+      padding: 20px;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .cards {
+      display: flex;
+      gap: 15px;
+      margin: 20px 0;
+      flex-wrap: wrap;
+    }
+    .card {
+      background-color: #e3f2fd;
+      padding: 20px;
+      border-radius: 10px;
+      flex: 1;
+      min-width: 120px;
+      text-align: center;
+      font-weight: bold;
+    }
+    .status-card {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .status-card div {
+      flex: 1;
+      min-width: 150px;
+      padding: 15px;
+      border-radius: 10px;
+      text-align: center;
+      font-weight: bold;
+      background-color: #fff;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    canvas {
+      background-color: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+  </style>
 </head>
 <body>
-    <div class="dashboard">
-        <!-- SIDEBAR -->
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <img src="assets/image.png" class="sidebar-logo" alt="Paragon Logo">
-                <button class="menu-toggle" type="button">≡</button>
-            </div>
-            
-            <ul>
-                <li><a href="dashboard.php" class="active">DASHBOARD</a></li>
-                
-                <?php if (isHeadAdmin()): ?>
-                    <li class="menu-section">
-                        <div class="menu-title">HEAD ADMIN</div>
-                        <a href="admin/monitoring.php">MONITORING</a>
-                        <a href="admin/backend-productivity.php">BACKEND DAILY PRODUCTIVITY</a>
-                        <a href="admin/pull-out.php">PULL OUT REPORT</a>
-                        <a href="admin/dormants.php">DORMANTS PER AREA</a>
-                        <a href="admin/recallouts.php">RECALLOUTS REMARKS</a>
-                        <a href="admin/visit-remarks.php">VISIT REMARKS</a>
-                        <a href="admin/daily-count.php">DAILY COUNT STATUS</a>
-                        <a href="admin/s25-report.php">S25 PLAN REPORT</a>
-                    </li>
-                <?php endif; ?>
-                
-                <li>
-                    <a href="logout.php" style="color: #ff9999;">LOGOUT</a>
-                </li>
-            </ul>
-        </div>
-        
-        <!-- MAIN CONTENT -->
-        <div class="main">
-            <!-- HEADER -->
-            <div class="header">
-                <div class="header-title">
-                    <h1>Backend Management Monitoring System</h1>
-                    <p>Welcome Back, <?php echo htmlspecialchars($username); ?>!</p>
-                </div>
-                <div class="user-profile">
-                    <div class="avatar"><?php echo htmlspecialchars($initials); ?></div>
-                    <div class="user-info">
-                        <p><strong><?php echo htmlspecialchars($username); ?></strong></p>
-                        <p><?php echo htmlspecialchars(ucfirst(str_replace('_', ' ', $userRole))); ?></p>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- STAT CARDS -->
-            <h2 class="section-title">Client Statuses</h2>
-            <div class="cards">
-                <?php if (!empty($stats['total_users'])): ?>
-                    <div class="card">
-                        <div class="card-icon">👤</div>
-                        <div>
-                            <h3>Total Users</h3>
-                            <p class="value"><?php echo $stats['total_users']; ?></p>
-                        </div>
-                    </div>
-                <?php endif; ?>
-                
-                <?php if (!empty($stats['total_clients'])): ?>
-                    <div class="card">
-                        <div class="card-icon">📋</div>
-                        <div>
-                            <h3>Client Accounts</h3>
-                            <p class="value"><?php echo $stats['total_clients']; ?></p>
-                        </div>
-                    </div>
-                <?php endif; ?>
-                
-                <?php if (!empty($stats['dormant_accounts'])): ?>
-                    <div class="card">
-                        <div class="card-icon">💤</div>
-                        <div>
-                            <h3>Dormant Accounts</h3>
-                            <p class="value"><?php echo $stats['dormant_accounts']; ?></p>
-                        </div>
-                    </div>
-                <?php endif; ?>
-                
-                <?php if (!empty($stats['total_amount_paid'])): ?>
-                    <div class="card">
-                        <div class="card-icon">💰</div>
-                        <div>
-                            <h3>Amount Paid</h3>
-                            <p class="value"><?php echo formatCurrency($stats['total_amount_paid']); ?></p>
-                        </div>
-                    </div>
-                <?php endif; ?>
-            </div>
-            
-            <!-- RECENT ACTIVITIES -->
-            <div class="section">
-                <h2>Recent System Activities</h2>
-                <?php if (!empty($recentActivities)): ?>
-                    <table>
-                        <tr>
-                            <th>Action</th>
-                            <th>User</th>
-                            <th>Table</th>
-                            <th>Time</th>
-                        </tr>
-                        <?php foreach ($recentActivities as $activity): ?>
-                            <tr>
-                                <td><strong><?php echo htmlspecialchars($activity['action']); ?></strong></td>
-                                <td><?php echo htmlspecialchars($activity['email'] ?? 'System'); ?></td>
-                                <td><?php echo htmlspecialchars($activity['table_name'] ?? '-'); ?></td>
-                                <td><?php echo formatDate($activity['created_at'], 'M d, Y H:i'); ?></td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </table>
-                <?php else: ?>
-                    <p class="no-data">No recent activities</p>
-                <?php endif; ?>
-            </div>
-            
-            <!-- HEAD ADMIN: CLIENT ACCOUNTS TABLE -->
-            <?php if (isHeadAdmin() && !empty($clientAccounts)): ?>
-            <div class="section">
-                <h2>Client Accounts - Complete Overview</h2>
-                <div style="overflow-x: auto;">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Client Name</th>
-                                <th>Account of User Admin/Manager</th>
-                                <th>Address</th>
-                                <th>Amount Paid</th>
-                                <th>Installation Fee</th>
-                                <th>Call Out Status</th>
-                                <th>Pull Out Remarks</th>
-                                <th>Status Input Channel</th>
-                                <th>Sales Category</th>
-                                <th>Main Remarks</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($clientAccounts as $account): ?>
-                                <?php
-                                    // Build account admin/manager string
-                                    $accountOwner = '';
-                                    if (!empty($account['created_by_first_name'])) {
-                                        $accountOwner = htmlspecialchars($account['created_by_first_name'] . ' ' . $account['created_by_last_name']);
-                                        $accountOwner .= ' (' . htmlspecialchars(ucfirst(str_replace('_', ' ', $account['created_by_role']))) . ')';
-                                    }
-                                    if (!empty($account['managed_by_first_name']) && $account['managed_by'] != $account['created_by']) {
-                                        if ($accountOwner) $accountOwner .= '<br>';
-                                        $accountOwner .= htmlspecialchars($account['managed_by_first_name'] . ' ' . $account['managed_by_last_name']);
-                                        $accountOwner .= ' (' . htmlspecialchars(ucfirst(str_replace('_', ' ', $account['managed_by_role']))) . ')';
-                                    }
-                                    if (empty($accountOwner)) {
-                                        $accountOwner = '-';
-                                    }
-                                ?>
-                                <tr>
-                                    <td><strong><?php echo htmlspecialchars($account['client_name']); ?></strong></td>
-                                    <td><?php echo $accountOwner; ?></td>
-                                    <td style="max-width: 250px; white-space: normal;"><?php echo htmlspecialchars($account['address'] ?? '-'); ?></td>
-                                    <td><?php echo formatCurrency($account['amount_paid'] ?? 0); ?></td>
-                                    <td><?php echo formatCurrency($account['installation_fee'] ?? 0); ?></td>
-                                    <td>
-                                        <span class="status-badge status-<?php echo $account['call_out_status']; ?>">
-                                            <?php echo htmlspecialchars(ucfirst($account['call_out_status'] ?? 'pending')); ?>
-                                        </span>
-                                    </td>
-                                    <td style="max-width: 200px; white-space: normal;"><?php echo htmlspecialchars($account['pull_out_remarks'] ?? '-'); ?></td>
-                                    <td><?php echo htmlspecialchars($account['status_input_channel'] ?? '-'); ?></td>
-                                    <td><?php echo htmlspecialchars($account['sales_category'] ?? '-'); ?></td>
-                                    <td style="max-width: 250px; white-space: normal;"><?php echo htmlspecialchars($account['main_remarks'] ?? '-'); ?></td>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            <?php endif; ?>
-        </div>
+  <div class="sidebar">
+    <h2>Paragon Corp</h2>
+    <a href="#">Dashboard</a>
+    <hr style="border: 0.5px solid #ffffff30;">
+    <a href="#">User</a>
+    <a href="#">Address</a>
+    <a href="#">Amount Paid</a>
+    <a href="#">Installation Fee</a>
+    <a href="#">Call Out Status</a>
+    <a href="#">Pull Out Remarks</a>
+    <a href="#">Status Input Channel</a>
+    <a href="#">Sales Category</a>
+    <a href="#">Main Remarks</a>
+    <hr style="border: 0.5px solid #ffffff30;">
+    <a href="#">Profile</a>
+    <a href="#">Logout</a>
+  </div>
+
+  <div class="main-content">
+    <div class="header">
+      <h1>Backend Management Monitoring</h1>
+      <div>
+        <strong>Juan Dela Cruz</strong><br>Admin
+      </div>
     </div>
+
+    <p>Overview of client statuses and productivity</p>
+
+    <div class="cards">
+      <div class="card">5<br>ADMIN</div>
+      <div class="card">3<br>MANAGER</div>
+      <div class="card">0<br>STATUS</div>
+      <div class="card">5<br>MUNICIPALITY</div>
+    </div>
+
+    <div class="status-card">
+      <div>
+        ACTIVE CLIENTS<br>
+        <span style="font-size: 24px; color: green;">49,789</span>
+      </div>
+      <div>
+        DORMANT CLIENTS<br>
+        <span style="font-size: 24px; color: red;">29,164</span>
+      </div>
+    </div>
+
+    <canvas id="statusChart" width="800" height="400"></canvas>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    const ctx = document.getElementById('statusChart').getContext('2d');
+    const statusChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['With Load Balance', '4X Uncontacted', '3X Uncontacted', 'For Callout', 'Client Moved Out', 'Others'],
+        datasets: [{
+          label: 'Status Daily Flow Thru',
+          data: [105, 72, 45, 28, 21, 10],
+          backgroundColor: ['#4285F4','#616161','#9E9E9E','#FFB74D','#AB47BC','#EF5350']
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false }
+        },
+        scales: {
+          y: { beginAtZero: true }
+        }
+      }
+    });
+  </script>
 </body>
 </html>
