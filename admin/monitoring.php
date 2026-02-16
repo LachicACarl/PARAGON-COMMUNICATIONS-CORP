@@ -46,6 +46,7 @@ $clients = getAll($pdo, "
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Monitoring - PARAGON</title>
     <link rel="stylesheet" href="../assets/style.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(20px); }
@@ -300,11 +301,208 @@ $clients = getAll($pdo, "
         .back-btn:active {
             transform: translateY(0);
         }
+        
+        .table-wrapper {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        /* Mobile Responsive Styles */
+        @media screen and (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                padding: 0;
+            }
+            
+            .main-content {
+                padding: 10px;
+            }
+            
+            .header {
+                padding: 20px 15px;
+                margin-bottom: 20px;
+                border-radius: 10px;
+            }
+            
+            .header h1 {
+                font-size: 22px;
+                margin-bottom: 5px;
+            }
+            
+            .header .breadcrumb {
+                font-size: 12px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+                margin-bottom: 20px;
+            }
+            
+            .stat-card {
+                padding: 20px 15px;
+            }
+            
+            .stat-card h3 {
+                font-size: 11px;
+                margin-bottom: 10px;
+            }
+            
+            .stat-card .value {
+                font-size: 28px;
+            }
+            
+            .content-box {
+                padding: 15px;
+                border-radius: 10px;
+            }
+            
+            .content-box h2 {
+                font-size: 18px;
+                margin-bottom: 15px;
+            }
+            
+            .table-wrapper {
+                margin: 0 -15px;
+                padding: 0 15px;
+            }
+            
+            table {
+                font-size: 12px;
+                min-width: 800px;
+            }
+            
+            table th {
+                padding: 10px 8px;
+                font-size: 11px;
+                position: sticky;
+                top: 0;
+                z-index: 10;
+            }
+            
+            table td {
+                padding: 10px 8px;
+                font-size: 12px;
+            }
+            
+            .status-badge {
+                font-size: 10px;
+                padding: 4px 8px;
+            }
+            
+            .back-btn {
+                padding: 10px 20px;
+                font-size: 14px;
+                margin-bottom: 15px;
+            }
+        }
+        
+        @media screen and (max-width: 480px) {
+            body {
+                padding: 5px;
+            }
+            
+            .header {
+                padding: 15px 10px;
+            }
+            
+            .header h1 {
+                font-size: 18px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            .stat-card {
+                padding: 15px;
+            }
+            
+            .stat-card .value {
+                font-size: 24px;
+            }
+            
+            .content-box {
+                padding: 10px;
+            }
+            
+            .content-box h2 {
+                font-size: 16px;
+            }
+            
+            table {
+                font-size: 11px;
+            }
+            
+            table th,
+            table td {
+                padding: 8px 6px;
+            }
+        }
     </style>
 </head>
 <body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleMobileSidebar()">
+        <span class="material-icons">menu</span>
+    </button>
+    
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" onclick="closeMobileSidebar()"></div>
+    
     <div class="container">
-        <a href="../dashboard.php" class="back-btn">Back to Dashboard</a>
+    <?php
+    $currentPage = basename($_SERVER['PHP_SELF']);
+    $userRole = getCurrentRole();
+    
+    // Define all navigation items with role restrictions
+    $allNavItems = [
+      '../dashboard.php' => ['icon' => 'dashboard', 'label' => 'Dashboard', 'roles' => ['head_admin', 'admin', 'manager']],
+      '../user.php' => ['icon' => 'people', 'label' => 'User', 'roles' => ['head_admin']],
+      '../address.php' => ['icon' => 'location_on', 'label' => 'Address', 'roles' => ['head_admin']],
+      '../amountpaid.php' => ['icon' => 'checklist', 'label' => 'Amount Paid', 'roles' => ['head_admin']],
+      'installation-fee.php' => ['icon' => 'attach_money', 'label' => 'Installation Fee', 'roles' => ['head_admin']],
+      'call_out_status.php' => ['icon' => 'call', 'label' => 'Call Out Status', 'roles' => ['head_admin']],
+      'pull_out_remarks.php' => ['icon' => 'notes', 'label' => 'Pull Out Remarks', 'roles' => ['head_admin']],
+      'status_input.php' => ['icon' => 'input', 'label' => 'Status Input', 'roles' => ['head_admin']],
+      'sales_category.php' => ['icon' => 'category', 'label' => 'Sales Category', 'roles' => ['head_admin']],
+      'main_remarks.php' => ['icon' => 'edit', 'label' => 'Main Remarks', 'roles' => ['head_admin']],
+      'monitoring.php' => ['icon' => 'monitor', 'label' => 'Backend Monitoring', 'roles' => ['admin']],
+      'backend-productivity.php' => ['icon' => 'assessment', 'label' => 'Backend Productivity', 'roles' => ['admin']],
+      'dormants.php' => ['icon' => 'person_off', 'label' => 'Dormants', 'roles' => ['admin']],
+      'recallouts.php' => ['icon' => 'phone_callback', 'label' => 'Recallouts', 'roles' => ['admin']],
+      'pull-out.php' => ['icon' => 'content_paste', 'label' => 'Pull Out Report', 'roles' => ['admin', 'manager']],
+      's25-report.php' => ['icon' => 'summarize', 'label' => 'S25 Report', 'roles' => ['admin', 'manager']],
+      'daily-count.php' => ['icon' => 'today', 'label' => 'Daily Count', 'roles' => ['admin', 'manager']],
+      'visit-remarks.php' => ['icon' => 'comment', 'label' => 'Visit Remarks', 'roles' => ['admin', 'manager']],
+      '../profile.php' => ['icon' => 'person', 'label' => 'Profile', 'roles' => ['head_admin', 'admin', 'manager']],
+      '../logout.php' => ['icon' => 'logout', 'label' => 'Logout', 'roles' => ['head_admin', 'admin', 'manager']],
+    ];
+    
+    // Filter navigation items based on user role
+    $navItems = array_filter($allNavItems, function($item) use ($userRole) {
+      return in_array($userRole, $item['roles']);
+    });
+    ?>
+    <aside class="sidebar">
+      <div class="logo">
+        <img src="../assets/image.png" alt="Paragon Logo">
+      </div>
+      <nav class="nav">
+        <?php foreach($navItems as $file => $item): ?>
+          <a href="<?php echo $file; ?>" class="<?php echo $currentPage === basename($file) ? 'active' : ''; ?>">
+            <span class="material-icons"><?php echo $item['icon']; ?></span>
+            <?php echo $item['label']; ?>
+          </a>
+        <?php endforeach; ?>
+      </nav>
+    </aside>
+    
+    <main class="main-content">
         
         <div class="header">
             <h1>📊 Monitoring Dashboard</h1>
@@ -334,6 +532,7 @@ $clients = getAll($pdo, "
         
         <div class="content-box">
             <h2>Recent Client Activities (Last 50)</h2>
+            <div class="table-wrapper">
             <table>
                 <thead>
                     <tr>
@@ -370,7 +569,41 @@ $clients = getAll($pdo, "
                     <?php endforeach; ?>
                 </tbody>
             </table>
+            </div>
         </div>
-    </div>
+    </main>
+  </div>
+  
+  <script>
+    function toggleMobileSidebar() {
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.querySelector('.mobile-overlay');
+        sidebar.classList.toggle('active');
+        overlay.classList.toggle('active');
+    }
+    
+    function closeMobileSidebar() {
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.querySelector('.mobile-overlay');
+        sidebar.classList.remove('active');
+        overlay.classList.remove('active');
+    }
+    
+    // Close sidebar when clicking a link on mobile
+    document.querySelectorAll('.sidebar .nav a').forEach(link => {
+        link.addEventListener('click', () => {
+            if (window.innerWidth <= 768) {
+                closeMobileSidebar();
+            }
+        });
+    });
+    
+    // Close sidebar on window resize to desktop
+    window.addEventListener('resize', () => {
+        if (window.innerWidth > 768) {
+            closeMobileSidebar();
+        }
+    });
+  </script>
 </body>
 </html>

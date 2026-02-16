@@ -105,15 +105,27 @@ $recentActivities = getAll($pdo, "
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
+    /* Material Icons Font Family */
+    .material-icons {
+      font-family: 'Material Icons';
+      font-weight: normal;
+      font-style: normal;
+      font-size: 24px;
+      display: inline-block;
+      line-height: 1;
+      text-transform: none;
+      letter-spacing: normal;
+      word-wrap: normal;
+      white-space: nowrap;
+      direction: ltr;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+      -moz-osx-font-smoothing: grayscale;
+      font-feature-settings: 'liga';
+    }
     body { margin:0; font-family:'Segoe UI', Tahoma, sans-serif; background:#f4f6f9; }
     .wrapper { display:flex; min-height:100vh; }
-    .sidebar { width:200px; background:#1769aa; color:#fff; padding:20px; }
-    .sidebar .menu { font-size:26px; cursor:pointer; }
-    .logo { text-align:center; margin:40px 0; }
-    .logo img { width:140px; }
-    .nav a { display:flex; align-items:center; gap:10px; color:#fff; text-decoration:none; padding:10px 12px; border-radius:8px; margin-bottom:5px; font-size:14px; }
-    .nav a:hover { background:rgba(255,255,255,0.15); }
-    .main { flex:1; padding:25px; }
+    .main { flex:1; padding:25px; margin-left:200px; }
     .header { background:#fff; padding:20px 25px; border-radius:12px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 6px rgba(0,0,0,0.08); }
     .header h1 { margin:0; font-size:22px; }
     .header p { margin:5px 0 0; font-size:14px; color:#666; }
@@ -130,24 +142,77 @@ $recentActivities = getAll($pdo, "
 </head>
 
 <body>
+<button class="mobile-menu-toggle" onclick="toggleMobileSidebar()">
+  <span class="material-icons">menu</span>
+</button>
+<div class="mobile-overlay" onclick="closeMobileSidebar()"></div>
 <div class="wrapper">
-  <!-- Updated Sidebar with page links -->
+  <!-- Embedded Sidebar -->
+  <?php
+  $currentPage = basename($_SERVER['PHP_SELF']);
+  $userRole = getCurrentRole();
+  
+  // Define all navigation items with role restrictions
+  $allNavItems = [
+    'dashboard.php' => ['icon' => 'dashboard', 'label' => 'Dashboard', 'roles' => ['head_admin', 'admin', 'manager']],
+    'user.php' => ['icon' => 'people', 'label' => 'User', 'roles' => ['head_admin']],
+    'address.php' => ['icon' => 'location_on', 'label' => 'Address', 'roles' => ['head_admin']],
+    'amountpaid.php' => ['icon' => 'checklist', 'label' => 'Amount Paid', 'roles' => ['head_admin']],
+    'admin/installation-fee.php' => ['icon' => 'attach_money', 'label' => 'Installation Fee', 'roles' => ['head_admin']],
+    'admin/call_out_status.php' => ['icon' => 'call', 'label' => 'Call Out Status', 'roles' => ['head_admin']],
+    'admin/pull_out_remarks.php' => ['icon' => 'notes', 'label' => 'Pull Out Remarks', 'roles' => ['head_admin']],
+    'admin/status_input.php' => ['icon' => 'input', 'label' => 'Status Input', 'roles' => ['head_admin']],
+    'admin/sales_category.php' => ['icon' => 'category', 'label' => 'Sales Category', 'roles' => ['head_admin']],
+    'admin/main_remarks.php' => ['icon' => 'edit', 'label' => 'Main Remarks', 'roles' => ['head_admin']],
+    'admin/monitoring.php' => ['icon' => 'monitor', 'label' => 'Backend Monitoring', 'roles' => ['admin']],
+    'admin/backend-productivity.php' => ['icon' => 'assessment', 'label' => 'Backend Productivity', 'roles' => ['admin']],
+    'admin/dormants.php' => ['icon' => 'person_off', 'label' => 'Dormants', 'roles' => ['admin']],
+    'admin/recallouts.php' => ['icon' => 'phone_callback', 'label' => 'Recallouts', 'roles' => ['admin']],
+    'admin/pull-out.php' => ['icon' => 'content_paste', 'label' => 'Pull Out Report', 'roles' => ['admin', 'manager']],
+    'admin/s25-report.php' => ['icon' => 'summarize', 'label' => 'S25 Report', 'roles' => ['admin', 'manager']],
+    'admin/daily-count.php' => ['icon' => 'today', 'label' => 'Daily Count', 'roles' => ['admin', 'manager']],
+    'admin/visit-remarks.php' => ['icon' => 'comment', 'label' => 'Visit Remarks', 'roles' => ['admin', 'manager']],
+    'profile.php' => ['icon' => 'person', 'label' => 'Profile', 'roles' => ['head_admin', 'admin', 'manager']],
+    'logout.php' => ['icon' => 'logout', 'label' => 'Logout', 'roles' => ['head_admin', 'admin', 'manager']],
+  ];
+  
+  // Filter navigation items based on user role
+  $navItems = array_filter($allNavItems, function($item) use ($userRole) {
+    return in_array($userRole, $item['roles']);
+  });
+  ?>
+  <style>
+    .sidebar {
+      width: 200px;
+      background: linear-gradient(135deg, #1565c0, #1976d2);
+      color: #fff;
+      padding: 20px;
+      position: fixed;
+      height: 100vh;
+      overflow-y: auto;
+      z-index: 1000;
+    }
+    .sidebar .logo { margin-bottom: 30px; }
+    .sidebar .logo img { max-width: 100%; height: auto; }
+    .sidebar nav { display: flex; flex-direction: column; gap: 5px; }
+    .sidebar nav a {
+      display: flex; align-items: center; gap: 15px; padding: 12px 15px;
+      color: rgba(255, 255, 255, 0.8); text-decoration: none; border-radius: 5px;
+      transition: all 0.3s ease; font-size: 14px;
+    }
+    .sidebar nav a:hover { background: rgba(255, 255, 255, 0.15); color: #fff; padding-left: 18px; }
+    .sidebar nav a.active { background: rgba(255, 255, 255, 0.25); color: #fff; font-weight: bold; border-right: 4px solid #fff; padding-right: 11px; }
+    .sidebar nav a .material-icons { font-size: 20px; flex-shrink: 0; }
+  </style>
   <aside class="sidebar">
-    <span class="material-icons menu">menu</span>
     <div class="logo"><img src="assets/image.png" alt="Paragon Logo"></div>
     <nav class="nav">
-      <a href="dashboard.php"><span class="material-icons">dashboard</span> Dashboard</a>
-      <a href="user.php"><span class="material-icons">people</span> User</a>
-      <a href="address.php"><span class="material-icons">location_on</span> Address</a>
-      <a href="amountpaid.php"><span class="material-icons">checklist</span> Amount Paid</a>
-      <a href="installation_fee.html"><span class="material-icons">attach_money</span> Installation Fee</a>
-      <a href="call_out_status.html"><span class="material-icons">call</span> Call Out Status</a>
-      <a href="pull_out_remarks.html"><span class="material-icons">notes</span> Pull Out Remarks</a>
-      <a href="status_input.html"><span class="material-icons">input</span> Status Input Channel</a>
-      <a href="sales_category.html"><span class="material-icons">category</span> Sales Category</a>
-      <a href="main_remarks.html"><span class="material-icons">edit</span> Main Remarks</a>
-      <a href="profile.html"><span class="material-icons">person</span> Profile</a>
-      <a href="logout.html"><span class="material-icons">logout</span> Logout</a>
+      <?php foreach($navItems as $file => $item): ?>
+        <a href="<?php echo $file; ?>" class="<?php echo $currentPage === $file ? 'active' : ''; ?>">
+          <span class="material-icons"><?php echo $item['icon']; ?></span>
+          <?php echo $item['label']; ?>
+        </a>
+      <?php endforeach; ?>
     </nav>
   </aside>
 
@@ -159,7 +224,7 @@ $recentActivities = getAll($pdo, "
       </div>
       <div class="profile">
         <div class="icon"><span class="material-icons">person</span></div>
-        <div><strong>Juan Dela Cruz</strong><br><small>Admin</small></div>
+        <div><strong id="userName">Loading...</strong><br><small id="userRole">Loading...</small></div>
       </div>
     </div>
 
@@ -184,23 +249,95 @@ $recentActivities = getAll($pdo, "
 fetch('fetch.php')
 .then(res => res.json())
 .then(data => {
-  document.getElementById('adminCard').innerHTML = `${data.summary.ADMIN}<br>ADMIN`;
-  document.getElementById('managerCard').innerHTML = `${data.summary.MANAGER}<br>MANAGER`;
+  // Populate user info
+  document.getElementById('userName').innerText = data.user.name || 'User';
+  document.getElementById('userRole').innerText = data.user.role || 'User';
+  
+  // Populate summary cards
+  document.getElementById('adminCard').innerHTML = `<span style="font-size:28px; color:#1769aa; font-weight:bold;">${data.summary.ADMIN || 0}</span><br>ADMIN`;
+  document.getElementById('managerCard').innerHTML = `<span style="font-size:28px; color:#1769aa; font-weight:bold;">${data.summary.MANAGER || 0}</span><br>MANAGER`;
+  document.getElementById('statusCard').innerHTML = `<span style="font-size:28px; color:#1769aa; font-weight:bold;">${data.summary.STATUS || 0}</span><br>STATUS`;
+  document.getElementById('municipalityCard').innerHTML = `<span style="font-size:28px; color:#1769aa; font-weight:bold;">${data.summary.MUNICIPALITY || 0}</span><br>MUNICIPALITY`;
 
-  document.getElementById('activeClients').innerText = data.clients.active.toLocaleString();
-  document.getElementById('dormantClients').innerText = data.clients.dormant.toLocaleString();
+  // Populate client counts
+  document.getElementById('activeClients').innerText = (data.clients.active || 0).toLocaleString();
+  document.getElementById('dormantClients').innerText = (data.clients.dormant || 0).toLocaleString();
 
+  // Create chart with real data
   const ctx = document.getElementById('statusChart');
-  new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: data.chart.labels,
-      datasets: [{ data: data.chart.data, backgroundColor: '#4285F4' }]
-    },
-    options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
-  });
+  if (ctx && data.chart.labels.length > 0) {
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: data.chart.labels,
+        datasets: [{
+          label: 'Status Flow',
+          data: data.chart.data,
+          backgroundColor: '#4285F4',
+          borderColor: '#1769aa',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: {
+            display: false
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              stepSize: 1
+            }
+          }
+        }
+      }
+    });
+  }
 })
-.catch(err => console.error(err));
+.catch(err => {
+  console.error('Error fetching dashboard data:', err);
+  // Fallback to show default values
+  document.getElementById('adminCard').innerHTML = `<span style="font-size:28px; color:#1769aa; font-weight:bold;">0</span><br>ADMIN`;
+  document.getElementById('managerCard').innerHTML = `<span style="font-size:28px; color:#1769aa; font-weight:bold;">0</span><br>MANAGER`;
+  document.getElementById('statusCard').innerHTML = `<span style="font-size:28px; color:#1769aa; font-weight:bold;">0</span><br>STATUS`;
+  document.getElementById('municipalityCard').innerHTML = `<span style="font-size:28px; color:#1769aa; font-weight:bold;">0</span><br>MUNICIPALITY`;
+  document.getElementById('activeClients').innerText = '0';
+  document.getElementById('dormantClients').innerText = '0';
+});
+</script>
+
+<script>
+  function toggleMobileSidebar() {
+      const sidebar = document.querySelector('.sidebar');
+      const overlay = document.querySelector('.mobile-overlay');
+      sidebar.classList.toggle('active');
+      overlay.classList.toggle('active');
+  }
+  
+  function closeMobileSidebar() {
+      const sidebar = document.querySelector('.sidebar');
+      const overlay = document.querySelector('.mobile-overlay');
+      sidebar.classList.remove('active');
+      overlay.classList.remove('active');
+  }
+  
+  document.querySelectorAll('.sidebar .nav a').forEach(link => {
+      link.addEventListener('click', () => {
+          if (window.innerWidth <= 768) {
+              closeMobileSidebar();
+          }
+      });
+  });
+  
+  window.addEventListener('resize', () => {
+      if (window.innerWidth > 768) {
+          closeMobileSidebar();
+      }
+  });
 </script>
 </body>
 </html>

@@ -35,6 +35,7 @@ $totalDormants = getRow($pdo, "SELECT COUNT(*) as count FROM client_accounts WHE
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dormants Per Area - PARAGON</title>
     <link rel="stylesheet" href="../assets/style.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -131,8 +132,59 @@ $totalDormants = getRow($pdo, "SELECT COUNT(*) as count FROM client_accounts WHE
     </style>
 </head>
 <body>
+    <button class="mobile-menu-toggle" onclick="toggleMobileSidebar()">
+        <span class="material-icons">menu</span>
+    </button>
+    <div class="mobile-overlay" onclick="closeMobileSidebar()"></div>
     <div class="container">
-        <a href="../dashboard.php" class="back-btn">← Back to Dashboard</a>
+    <?php
+    $currentPage = basename($_SERVER['PHP_SELF']);
+    $userRole = getCurrentRole();
+    
+    // Define all navigation items with role restrictions
+    $allNavItems = [
+      '../dashboard.php' => ['icon' => 'dashboard', 'label' => 'Dashboard', 'roles' => ['head_admin', 'admin', 'manager']],
+      '../user.php' => ['icon' => 'people', 'label' => 'User', 'roles' => ['head_admin']],
+      '../address.php' => ['icon' => 'location_on', 'label' => 'Address', 'roles' => ['head_admin']],
+      '../amountpaid.php' => ['icon' => 'checklist', 'label' => 'Amount Paid', 'roles' => ['head_admin']],
+      'installation-fee.php' => ['icon' => 'attach_money', 'label' => 'Installation Fee', 'roles' => ['head_admin']],
+      'call_out_status.php' => ['icon' => 'call', 'label' => 'Call Out Status', 'roles' => ['head_admin']],
+      'pull_out_remarks.php' => ['icon' => 'notes', 'label' => 'Pull Out Remarks', 'roles' => ['head_admin']],
+      'status_input.php' => ['icon' => 'input', 'label' => 'Status Input', 'roles' => ['head_admin']],
+      'sales_category.php' => ['icon' => 'category', 'label' => 'Sales Category', 'roles' => ['head_admin']],
+      'main_remarks.php' => ['icon' => 'edit', 'label' => 'Main Remarks', 'roles' => ['head_admin']],
+      'monitoring.php' => ['icon' => 'monitor', 'label' => 'Backend Monitoring', 'roles' => ['admin']],
+      'backend-productivity.php' => ['icon' => 'assessment', 'label' => 'Backend Productivity', 'roles' => ['admin']],
+      'dormants.php' => ['icon' => 'person_off', 'label' => 'Dormants', 'roles' => ['admin']],
+      'recallouts.php' => ['icon' => 'phone_callback', 'label' => 'Recallouts', 'roles' => ['admin']],
+      'pull-out.php' => ['icon' => 'content_paste', 'label' => 'Pull Out Report', 'roles' => ['admin', 'manager']],
+      's25-report.php' => ['icon' => 'summarize', 'label' => 'S25 Report', 'roles' => ['admin', 'manager']],
+      'daily-count.php' => ['icon' => 'today', 'label' => 'Daily Count', 'roles' => ['admin', 'manager']],
+      'visit-remarks.php' => ['icon' => 'comment', 'label' => 'Visit Remarks', 'roles' => ['admin', 'manager']],
+      '../profile.php' => ['icon' => 'person', 'label' => 'Profile', 'roles' => ['head_admin', 'admin', 'manager']],
+      '../logout.php' => ['icon' => 'logout', 'label' => 'Logout', 'roles' => ['head_admin', 'admin', 'manager']],
+    ];
+    
+    // Filter navigation items based on user role
+    $navItems = array_filter($allNavItems, function($item) use ($userRole) {
+      return in_array($userRole, $item['roles']);
+    });
+    ?>
+    <aside class="sidebar">
+      <div class="logo">
+        <img src="../assets/image.png" alt="Paragon Logo">
+      </div>
+      <nav class="nav">
+        <?php foreach($navItems as $file => $item): ?>
+          <a href="<?php echo $file; ?>" class="<?php echo $currentPage === basename($file) ? 'active' : ''; ?>">
+            <span class="material-icons"><?php echo $item['icon']; ?></span>
+            <?php echo $item['label']; ?>
+          </a>
+        <?php endforeach; ?>
+      </nav>
+    </aside>
+    
+    <main class="main-content">
         
         <div class="header">
             <h1>💤 Dormants Per Area</h1>
@@ -165,6 +217,37 @@ $totalDormants = getRow($pdo, "SELECT COUNT(*) as count FROM client_accounts WHE
                 </tbody>
             </table>
         </div>
-    </div>
+    </main>
+  </div>
+  
+  <script>
+    function toggleMobileSidebar() {
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.querySelector('.mobile-overlay');
+        sidebar.classList.toggle('active');
+        overlay.classList.toggle('active');
+    }
+    
+    function closeMobileSidebar() {
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.querySelector('.mobile-overlay');
+        sidebar.classList.remove('active');
+        overlay.classList.remove('active');
+    }
+    
+    document.querySelectorAll('.sidebar .nav a').forEach(link => {
+        link.addEventListener('click', () => {
+            if (window.innerWidth <= 768) {
+                closeMobileSidebar();
+            }
+        });
+    });
+    
+    window.addEventListener('resize', () => {
+        if (window.innerWidth > 768) {
+            closeMobileSidebar();
+        }
+    });
+  </script>
 </body>
 </html>
