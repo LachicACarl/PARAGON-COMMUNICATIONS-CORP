@@ -7,20 +7,20 @@
 // Get the current page filename
 $currentPage = basename($_SERVER['PHP_SELF']);
 
-// Define navigation items
+// Define navigation items with full paths
 $navItems = [
-    'dashboard.php' => ['icon' => 'dashboard', 'label' => 'Dashboard'],
-    'user.php' => ['icon' => 'people', 'label' => 'User'],
-    'address.php' => ['icon' => 'location_on', 'label' => 'Address'],
-    'amountpaid.php' => ['icon' => 'checklist', 'label' => 'Amount Paid'],
-    'admin/installation-fee.php' => ['icon' => 'attach_money', 'label' => 'Installation Fee'],
-    'admin/call_out_status.php' => ['icon' => 'call', 'label' => 'Call Out Status'],
-    'admin/pull_out_remarks.php' => ['icon' => 'notes', 'label' => 'Pull Out Remarks'],
-    'admin/status_input.php' => ['icon' => 'input', 'label' => 'Status Input'],
-    'admin/sales_category.php' => ['icon' => 'category', 'label' => 'Sales Category'],
-    'admin/main_remarks.php' => ['icon' => 'edit', 'label' => 'Main Remarks'],
-    'profile.php' => ['icon' => 'person', 'label' => 'Profile'],
-    'logout.php' => ['icon' => 'logout', 'label' => 'Logout'],
+    'pages/dashboard.php' => ['icon' => 'dashboard', 'label' => 'Dashboard'],
+    'pages/user.php' => ['icon' => 'people', 'label' => 'User'],
+    'pages/address.php' => ['icon' => 'location_on', 'label' => 'Address'],
+    'pages/amountpaid.php' => ['icon' => 'checklist', 'label' => 'Amount Paid'],
+    'admin/head-admin/installation-fee.php' => ['icon' => 'attach_money', 'label' => 'Installation Fee'],
+    'admin/head-admin/call_out_status.php' => ['icon' => 'call', 'label' => 'Call Out Status'],
+    'admin/head-admin/pull_out_remarks.php' => ['icon' => 'notes', 'label' => 'Pull Out Remarks'],
+    'admin/head-admin/status_input.php' => ['icon' => 'input', 'label' => 'Status Input'],
+    'admin/head-admin/sales_category.php' => ['icon' => 'category', 'label' => 'Sales Category'],
+    'admin/head-admin/main_remarks.php' => ['icon' => 'edit', 'label' => 'Main Remarks'],
+    'pages/profile.php' => ['icon' => 'person', 'label' => 'Profile'],
+    'auth/logout.php' => ['icon' => 'logout', 'label' => 'Logout'],
 ];
 ?>
 
@@ -89,8 +89,11 @@ $navItems = [
     </div>
 
     <nav class="nav">
-        <?php foreach($navItems as $file => $item): ?>
-            <a href="<?php echo $file; ?>" class="<?php echo $currentPage === $file ? 'active' : ''; ?>">
+        <?php foreach($navItems as $file => $item): 
+            $isActive = basename($file) === $currentPage;
+            $fullPath = (defined('BASE_URL') ? BASE_URL : '../') . $file;
+        ?>
+            <a href="<?php echo $fullPath; ?>" class="<?php echo $isActive ? 'active' : ''; ?>">
                 <span class="material-icons"><?php echo $item['icon']; ?></span>
                 <?php echo $item['label']; ?>
             </a>

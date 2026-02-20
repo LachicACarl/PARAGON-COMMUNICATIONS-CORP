@@ -4,11 +4,11 @@
  */
 
 session_start();
-require_once __DIR__ . '/config/config.php';
+require_once __DIR__ . '/../config/config.php';
 
 // If already logged in, redirect to dashboard
 if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true) {
-    header("Location: dashboard.php");
+    header("Location: ../pages/dashboard.php");
     exit();
 }
 

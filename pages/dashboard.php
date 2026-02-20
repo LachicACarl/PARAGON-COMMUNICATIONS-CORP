@@ -5,9 +5,9 @@
  */
 
 session_start();
-require_once __DIR__ . '/config/config.php';
-require_once __DIR__ . '/config/database.php';
-require_once __DIR__ . '/config/helpers.php';
+require_once __DIR__ . '/../config/config.php';
+require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../config/helpers.php';
 
 // Check if user is logged in
 requireLogin();
@@ -130,10 +130,6 @@ elseif (isManager()) {
     <div class="flex-shrink-0 border-b-2 border-blue-500/20 bg-gradient-to-r from-slate-800/50 to-transparent px-6 py-5 hover:bg-gradient-to-r hover:from-slate-700/70 hover:to-transparent transition-all">
       <a href="<?php echo BASE_URL; ?>dashboard.php" class="flex items-center gap-3 group">
         <img src="<?php echo BASE_URL; ?>assets/image.png" class="w-12 h-12 rounded-lg transition-transform group-hover:scale-105" alt="Paragon Logo">
-        <div class="flex flex-col">
-          <span class="font-bold tracking-wide text-white text-sm">PARAGON</span>
-          <span class="text-xs text-blue-400 font-medium">COMMUNICATIONS CORP</span>
-        </div>
       </a>
     </div>
 

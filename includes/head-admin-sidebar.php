@@ -7,15 +7,16 @@ $headAdminNavItems = [
     'management' => [
         'label' => 'MANAGEMENT',
         'items' => [
-            'user-management.php' => ['icon' => 'people', 'label' => 'Account of User Admin & Manager'],
-            'address-management.php' => ['icon' => 'location_on', 'label' => 'Address (Long Address)'],
-            'amount-paid.php' => ['icon' => 'paid', 'label' => 'Amount Paid'],
-            'installation-fee.php' => ['icon' => 'attach_money', 'label' => 'Installation Fee'],
-            'call_out_status.php' => ['icon' => 'call', 'label' => 'Call Out Status'],
-            'pull_out_remarks.php' => ['icon' => 'notes', 'label' => 'Pull Out Remarks'],
-            'status_input.php' => ['icon' => 'input', 'label' => 'Status Input Channel'],
-            'sales_category.php' => ['icon' => 'category', 'label' => 'Sales Category'],
-            'main_remarks.php' => ['icon' => 'edit', 'label' => 'Main Remarks'],
+            'pages/user.php' => ['icon' => 'people', 'label' => 'User'],
+            'pages/address.php' => ['icon' => 'location_on', 'label' => 'Address'],
+            'pages/amountpaid.php' => ['icon' => 'checklist', 'label' => 'Amount Paid'],
+            'admin/head-admin/installation-fee.php' => ['icon' => 'attach_money', 'label' => 'Installation Fee'],
+            'admin/head-admin/call_out_status.php' => ['icon' => 'call', 'label' => 'Call Out Status'],
+            'admin/head-admin/pull_out_remarks.php' => ['icon' => 'notes', 'label' => 'Pull Out Remarks'],
+            'admin/head-admin/status_input.php' => ['icon' => 'input', 'label' => 'Status Input'],
+            'admin/head-admin/sales_category.php' => ['icon' => 'category', 'label' => 'Sales Category'],
+            'admin/head-admin/main_remarks.php' => ['icon' => 'edit', 'label' => 'Main Remarks'],
+            'pages/profile.php' => ['icon' => 'person', 'label' => 'Profile'],
         ]
     ]
 ];
@@ -33,7 +34,7 @@ $headAdminNavItems = [
 <aside class="sidebar fixed md:relative left-0 top-0 w-64 h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white flex flex-col p-0 overflow-y-auto z-50 md:z-auto border-r border-slate-700/50 shadow-2xl">
     <!-- Sidebar Header -->
     <div class="flex-shrink-0 border-b-2 border-blue-500/20 bg-gradient-to-r from-slate-800/50 to-transparent px-6 py-5 hover:bg-gradient-to-r hover:from-slate-700/70 hover:to-transparent transition-all">
-        <a href="<?php echo BASE_URL; ?>dashboard.php" class="flex items-center gap-3 text-xl font-bold text-white hover:text-blue-400 transition-colors duration-200">
+        <a href="<?php echo BASE_URL; ?>pages/dashboard.php" class="flex items-center gap-3 text-xl font-bold text-white hover:text-blue-400 transition-colors duration-200">
             <span class="material-icons text-2xl">dashboard</span>
             <span class="hidden sm:inline font-bold tracking-wide">PARAGON</span>
         </a>
@@ -47,8 +48,8 @@ $headAdminNavItems = [
         </div>
         <div class="flex flex-col space-y-1">
             <?php foreach ($headAdminNavItems['management']['items'] as $file => $item): 
-                $fullPath = BASE_URL . 'admin/head-admin/' . $file;
-                $isActive = strpos($currentPath, $file) !== false;
+                $fullPath = BASE_URL . $file;
+                $isActive = strpos($currentPath, basename($file)) !== false;
             ?>
                 <a href="<?php echo $fullPath; ?>" 
                    class="flex items-center gap-3 px-4 py-3 mx-1 rounded-lg transition-all duration-200 relative overflow-hidden group <?php echo $isActive ? 'active bg-gradient-to-r from-blue-500/30 to-blue-500/10 border-l-4 border-blue-400 font-bold text-white' : 'text-slate-300 hover:text-white border-l-4 border-transparent hover:bg-slate-700/40 hover:border-blue-500'; ?>"

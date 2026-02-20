@@ -1,12 +1,12 @@
 <?php
-require_once 'config/database.php';
-require_once 'config/helpers.php';
+require_once '../config/database.php';
+require_once '../config/helpers.php';
 
 session_start();
 
 // Check if user is logged in
 if (!isLoggedIn()) {
-    header('Location: ' . BASE_URL . 'login.php');
+    header('Location: ' . BASE_URL . 'auth/login.php');
     exit;
 }
 

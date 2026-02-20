@@ -2,12 +2,12 @@
 session_start();
 
 // Check if user is logged in
-require_once 'config/authenticate.php';
-require_once 'config/database.php';
-require_once 'config/helpers.php';
+require_once '../config/authenticate.php';
+require_once '../config/database.php';
+require_once '../config/helpers.php';
 
 if (!isLoggedIn()) {
-  header("Location: login.php");
+  header("Location: ../auth/login.php");
   exit;
 }
 
