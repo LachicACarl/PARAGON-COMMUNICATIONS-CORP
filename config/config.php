@@ -39,6 +39,7 @@ if (file_exists($envFile)) {
 // Application environment
 define('ENV', getenv('APP_ENV') ?: 'production');
 define('APP_URL', getenv('APP_URL') ?: 'http://localhost/paragon');
+define('BASE_URL', '/paragon/PARAGON-COMMUNICATIONS-CORP/');
 define('APP_NAME', 'PARAGON Communications');
 
 // Database configuration (loaded from .env)

@@ -5,7 +5,8 @@
  */
 
 session_start();
-require_once __DIR__ . '/config/database.php';
+require_once __DIR__ . '/database.php';
+require_once __DIR__ . '/config.php';
 
 try {
     // Create regions table
@@ -55,9 +56,20 @@ try {
         )
     ");
 
-    echo "Tables created successfully!";
+    header('Content-Type: application/json');
+    echo json_encode([
+        'success' => true,
+        'message' => 'Address tables created successfully!'
+    ]);
 
 } catch(PDOException $e) {
-    echo "Error creating tables: " . $e->getMessage();
+    header('Content-Type: application/json');
+    http_response_code(500);
+    echo json_encode([
+        'success' => false,
+        'error' => 'Error creating tables',
+        'details' => $e->getMessage()
+    ]);
+    error_log("Address tables creation error: " . $e->getMessage());
 }
 ?>

@@ -45,40 +45,11 @@ $clients = getAll($pdo, "
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Monitoring - PARAGON</title>
-    <link rel="stylesheet" href="../assets/style.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <style>
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        @keyframes slideIn {
-            from { transform: translateX(-30px); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-        
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            margin: 0;
-            padding: 20px;
-            min-height: 100vh;
-        }
-        
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            animation: fadeIn 0.6s ease-out;
-        }
-        
-        .header {
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../assets/tailwind-compat.css">
+</head>
+<body class="font-['Segoe_UI'] bg-gradient-to-br from-indigo-500 via-purple-500 to-purple-700 min-h-screen p-5">
             padding: 30px;
             border-radius: 15px;
             margin-bottom: 30px;
@@ -444,57 +415,150 @@ $clients = getAll($pdo, "
             }
         }
     </style>
+    <link rel="stylesheet" href="../assets/tailwind-compat.css">
 </head>
 <body>
     <!-- Mobile Menu Toggle -->
-    <button class="mobile-menu-toggle" onclick="toggleMobileSidebar()">
+    <button class="md:hidden fixed top-4 left-4 z-50 p-2 bg-blue-600 text-white rounded-lg shadow-lg" onclick="toggleMobileSidebar()">
         <span class="material-icons">menu</span>
     </button>
     
     <!-- Mobile Overlay -->
-    <div class="mobile-overlay" onclick="closeMobileSidebar()"></div>
+    <div class="hidden md:hidden fixed inset-0 bg-black bg-opacity-50 z-40" id="mobile-overlay" onclick="closeMobileSidebar()"></div>
     
-    <div class="container">
+    <div class="max-w-7xl mx-auto animate-fade-in">
     <?php
-    $currentPage = basename($_SERVER['PHP_SELF']);
+    $currentPath = $_SERVER['PHP_SELF'];
     $userRole = getCurrentRole();
-    
-    // Define all navigation items with role restrictions
+
+    // Navigation definition
     $allNavItems = [
-      '../dashboard.php' => ['icon' => 'dashboard', 'label' => 'Dashboard', 'roles' => ['head_admin', 'admin', 'manager']],
-      '../user.php' => ['icon' => 'people', 'label' => 'User', 'roles' => ['head_admin']],
-      '../address.php' => ['icon' => 'location_on', 'label' => 'Address', 'roles' => ['head_admin']],
-      '../amountpaid.php' => ['icon' => 'checklist', 'label' => 'Amount Paid', 'roles' => ['head_admin']],
-      'installation-fee.php' => ['icon' => 'attach_money', 'label' => 'Installation Fee', 'roles' => ['head_admin']],
-      'call_out_status.php' => ['icon' => 'call', 'label' => 'Call Out Status', 'roles' => ['head_admin']],
-      'pull_out_remarks.php' => ['icon' => 'notes', 'label' => 'Pull Out Remarks', 'roles' => ['head_admin']],
-      'status_input.php' => ['icon' => 'input', 'label' => 'Status Input', 'roles' => ['head_admin']],
-      'sales_category.php' => ['icon' => 'category', 'label' => 'Sales Category', 'roles' => ['head_admin']],
-      'main_remarks.php' => ['icon' => 'edit', 'label' => 'Main Remarks', 'roles' => ['head_admin']],
-      'monitoring.php' => ['icon' => 'monitor', 'label' => 'Backend Monitoring', 'roles' => ['admin']],
-      'backend-productivity.php' => ['icon' => 'assessment', 'label' => 'Backend Productivity', 'roles' => ['admin']],
-      'dormants.php' => ['icon' => 'person_off', 'label' => 'Dormants', 'roles' => ['admin']],
-      'recallouts.php' => ['icon' => 'phone_callback', 'label' => 'Recallouts', 'roles' => ['admin']],
-      'pull-out.php' => ['icon' => 'content_paste', 'label' => 'Pull Out Report', 'roles' => ['admin', 'manager']],
-      's25-report.php' => ['icon' => 'summarize', 'label' => 'S25 Report', 'roles' => ['admin', 'manager']],
-      'daily-count.php' => ['icon' => 'today', 'label' => 'Daily Count', 'roles' => ['admin', 'manager']],
-      'visit-remarks.php' => ['icon' => 'comment', 'label' => 'Visit Remarks', 'roles' => ['admin', 'manager']],
-      '../profile.php' => ['icon' => 'person', 'label' => 'Profile', 'roles' => ['head_admin', 'admin', 'manager']],
-      '../logout.php' => ['icon' => 'logout', 'label' => 'Logout', 'roles' => ['head_admin', 'admin', 'manager']],
+      'dashboard.php' => [
+        'icon' => 'dashboard',
+        'label' => 'Dashboard',
+        'roles' => ['head_admin', 'admin', 'manager']
+      ],
+      'user.php' => [
+        'icon' => 'people',
+        'label' => 'User',
+        'roles' => ['head_admin']
+      ],
+      'address.php' => [
+        'icon' => 'location_on',
+        'label' => 'Address',
+        'roles' => ['head_admin']
+      ],
+      'amountpaid.php' => [
+        'icon' => 'checklist',
+        'label' => 'Amount Paid',
+        'roles' => ['head_admin']
+      ],
+
+      // ADMIN CONFIG PAGES
+      'admin/installation-fee.php' => [
+        'icon' => 'attach_money',
+        'label' => 'Installation Fee',
+        'roles' => ['head_admin']
+      ],
+      'admin/call_out_status.php' => [
+        'icon' => 'call',
+        'label' => 'Call Out Status',
+        'roles' => ['head_admin']
+      ],
+      'admin/pull_out_remarks.php' => [
+        'icon' => 'notes',
+        'label' => 'Pull Out Remarks',
+        'roles' => ['head_admin']
+      ],
+      'admin/status_input.php' => [
+        'icon' => 'input',
+        'label' => 'Status Input',
+        'roles' => ['head_admin']
+      ],
+      'admin/sales_category.php' => [
+        'icon' => 'category',
+        'label' => 'Sales Category',
+        'roles' => ['head_admin']
+      ],
+      'admin/main_remarks.php' => [
+        'icon' => 'edit',
+        'label' => 'Main Remarks',
+        'roles' => ['head_admin']
+      ],
+
+      // ADMIN REPORTS
+      'admin/monitoring.php' => [
+        'icon' => 'monitor',
+        'label' => 'Backend Monitoring',
+        'roles' => ['admin']
+      ],
+      'admin/backend-productivity.php' => [
+        'icon' => 'assessment',
+        'label' => 'Backend Productivity',
+        'roles' => ['admin']
+      ],
+      'admin/dormants.php' => [
+        'icon' => 'person_off',
+        'label' => 'Dormants',
+        'roles' => ['admin']
+      ],
+      'admin/recallouts.php' => [
+        'icon' => 'phone_callback',
+        'label' => 'Recallouts',
+        'roles' => ['admin']
+      ],
+
+      // ADMIN / MANAGER SHARED
+      'admin/pull-out.php' => [
+        'icon' => 'content_paste',
+        'label' => 'Pull Out Report',
+        'roles' => ['admin', 'manager']
+      ],
+      'admin/s25-report.php' => [
+        'icon' => 'summarize',
+        'label' => 'S25 Report',
+        'roles' => ['admin', 'manager']
+      ],
+      'admin/daily-count.php' => [
+        'icon' => 'today',
+        'label' => 'Daily Count',
+        'roles' => ['admin', 'manager']
+      ],
+      'admin/visit-remarks.php' => [
+        'icon' => 'comment',
+        'label' => 'Visit Remarks',
+        'roles' => ['admin', 'manager']
+      ],
+
+      // COMMON
+      'profile.php' => [
+        'icon' => 'person',
+        'label' => 'Profile',
+        'roles' => ['head_admin', 'admin', 'manager']
+      ],
+      'logout.php' => [
+        'icon' => 'logout',
+        'label' => 'Logout',
+        'roles' => ['head_admin', 'admin', 'manager']
+      ],
     ];
-    
-    // Filter navigation items based on user role
-    $navItems = array_filter($allNavItems, function($item) use ($userRole) {
-      return in_array($userRole, $item['roles']);
-    });
+
+    // Filter by role
+    $navItems = array_filter($allNavItems, fn($item) =>
+      in_array($userRole, $item['roles'])
+    );
     ?>
     <aside class="sidebar">
       <div class="logo">
-        <img src="../assets/image.png" alt="Paragon Logo">
+        <img src="<?php echo BASE_URL; ?>assets/image.png" alt="Paragon Logo">
       </div>
       <nav class="nav">
-        <?php foreach($navItems as $file => $item): ?>
-          <a href="<?php echo $file; ?>" class="<?php echo $currentPage === basename($file) ? 'active' : ''; ?>">
+        <?php foreach ($navItems as $file => $item): ?>
+          <?php
+            $fullPath = BASE_URL . $file;
+            $isActive = strpos($currentPath, $file) !== false;
+          ?>
+          <a href="<?php echo $fullPath; ?>" class="<?php echo $isActive ? 'active' : ''; ?>">
             <span class="material-icons"><?php echo $item['icon']; ?></span>
             <?php echo $item['label']; ?>
           </a>
@@ -502,53 +566,53 @@ $clients = getAll($pdo, "
       </nav>
     </aside>
     
-    <main class="main-content">
+    <main class="flex-1">
         
-        <div class="header">
-            <h1>📊 Monitoring Dashboard</h1>
-            <div class="breadcrumb">
-                <a href="../dashboard.php">Dashboard</a> / Monitoring
+        <div class="bg-gradient-to-r from-blue-800 to-blue-600 p-8 rounded-2xl shadow-2xl text-white mb-8 animate-slide-in">
+            <h1 class="text-3xl font-bold mb-2 drop-shadow-md">📊 Monitoring Dashboard</h1>
+            <div class="text-white text-opacity-90 text-sm">
+                <a href="../pages/dashboard.php" class="text-white font-semibold hover:underline">Dashboard</a> / Monitoring
             </div>
         </div>
         
-        <div class="stats-grid">
-            <div class="stat-card total">
-                <h3>Total Clients</h3>
-                <p class="value"><?php echo $totalClients; ?></p>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white p-7 rounded-2xl shadow-xl text-center transition-transform duration-300 hover:scale-105 hover:shadow-2xl border-t-4 border-blue-500">
+                <h3 class="text-gray-600 text-xs uppercase mb-4 tracking-wider font-semibold">Total Clients</h3>
+                <p class="text-blue-500 text-5xl font-extrabold"><?php echo $totalClients; ?></p>
             </div>
-            <div class="stat-card active">
-                <h3>Active</h3>
-                <p class="value"><?php echo $activeClients; ?></p>
+            <div class="bg-white p-7 rounded-2xl shadow-xl text-center transition-transform duration-300 hover:scale-105 hover:shadow-2xl border-t-4 border-green-500">
+                <h3 class="text-gray-600 text-xs uppercase mb-4 tracking-wider font-semibold">Active</h3>
+                <p class="text-green-500 text-5xl font-extrabold"><?php echo $activeClients; ?></p>
             </div>
-            <div class="stat-card dormant">
-                <h3>Dormant</h3>
-                <p class="value"><?php echo $dormantClients; ?></p>
+            <div class="bg-white p-7 rounded-2xl shadow-xl text-center transition-transform duration-300 hover:scale-105 hover:shadow-2xl border-t-4 border-orange-500">
+                <h3 class="text-gray-600 text-xs uppercase mb-4 tracking-wider font-semibold">Dormant</h3>
+                <p class="text-orange-500 text-5xl font-extrabold"><?php echo $dormantClients; ?></p>
             </div>
-            <div class="stat-card inactive">
-                <h3>Inactive</h3>
-                <p class="value"><?php echo $inactiveClients; ?></p>
+            <div class="bg-white p-7 rounded-2xl shadow-xl text-center transition-transform duration-300 hover:scale-105 hover:shadow-2xl border-t-4 border-red-500">
+                <h3 class="text-gray-600 text-xs uppercase mb-4 tracking-wider font-semibold">Inactive</h3>
+                <p class="text-red-500 text-5xl font-extrabold"><?php echo $inactiveClients; ?></p>
             </div>
         </div>
         
-        <div class="content-box">
-            <h2>Recent Client Activities (Last 50)</h2>
-            <div class="table-wrapper">
-            <table>
+        <div class="bg-white p-8 rounded-2xl shadow-xl">
+            <h2 class="text-gray-900 text-2xl font-bold mb-6 pb-3 border-b-4 border-gradient-to-r from-indigo-500 to-purple-600 inline-block">Recent Client Activities (Last 50)</h2>
+            <div class="overflow-x-auto">
+            <table class="w-full">
                 <thead>
-                    <tr>
-                        <th>Client Name</th>
-                        <th>Managed By</th>
-                        <th>Status</th>
-                        <th>Amount Paid</th>
-                        <th>Sales Category</th>
-                        <th>Last Updated</th>
+                    <tr class="bg-gradient-to-r from-indigo-500 to-purple-600">
+                        <th class="px-3 py-4 text-left text-white font-semibold text-xs uppercase tracking-wide rounded-tl-lg">Client Name</th>
+                        <th class="px-3 py-4 text-left text-white font-semibold text-xs uppercase tracking-wide">Managed By</th>
+                        <th class="px-3 py-4 text-left text-white font-semibold text-xs uppercase tracking-wide">Status</th>
+                        <th class="px-3 py-4 text-left text-white font-semibold text-xs uppercase tracking-wide">Amount Paid</th>
+                        <th class="px-3 py-4 text-left text-white font-semibold text-xs uppercase tracking-wide">Sales Category</th>
+                        <th class="px-3 py-4 text-left text-white font-semibold text-xs uppercase tracking-wide rounded-tr-lg">Last Updated</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php foreach ($clients as $client): ?>
-                        <tr>
-                            <td><strong><?php echo htmlspecialchars($client['client_name']); ?></strong></td>
-                            <td>
+                        <tr class="hover:bg-gradient-to-r hover:from-blue-50 hover:to-white transition-all duration-200 hover:scale-[1.01] hover:shadow-md">
+                            <td class="px-3 py-4 text-sm text-gray-900 border-b border-gray-200"><strong><?php echo htmlspecialchars($client['client_name']); ?></strong></td>
+                            <td class="px-3 py-4 text-sm text-gray-600 border-b border-gray-200">
                                 <?php 
                                 if ($client['managed_by_first_name']) {
                                     echo htmlspecialchars($client['managed_by_first_name'] . ' ' . $client['managed_by_last_name']);
@@ -557,14 +621,23 @@ $clients = getAll($pdo, "
                                 }
                                 ?>
                             </td>
-                            <td>
-                                <span class="status-badge status-<?php echo $client['call_out_status']; ?>">
+                            <td class="px-3 py-4 text-sm border-b border-gray-200">
+                                <span class="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide
+                                    <?php 
+                                    echo match($client['call_out_status']) {
+                                        'active' => 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-md shadow-green-500/30',
+                                        'dormant' => 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-md shadow-orange-500/30',
+                                        'inactive' => 'bg-gradient-to-r from-red-500 to-red-600 text-white shadow-md shadow-red-500/30',
+                                        'pending' => 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md shadow-blue-500/30',
+                                        default => 'bg-gray-200 text-gray-700'
+                                    };
+                                    ?>">
                                     <?php echo htmlspecialchars(ucfirst($client['call_out_status'])); ?>
                                 </span>
                             </td>
-                            <td><?php echo formatCurrency($client['amount_paid']); ?></td>
-                            <td><?php echo htmlspecialchars($client['sales_category'] ?? '-'); ?></td>
-                            <td><?php echo formatDate($client['updated_at'], 'M d, Y H:i'); ?></td>
+                            <td class="px-3 py-4 text-sm text-gray-600 border-b border-gray-200"><?php echo formatCurrency($client['amount_paid']); ?></td>
+                            <td class="px-3 py-4 text-sm text-gray-600 border-b border-gray-200"><?php echo htmlspecialchars($client['sales_category'] ?? '-'); ?></td>
+                            <td class="px-3 py-4 text-sm text-gray-600 border-b border-gray-200"><?php echo formatDate($client['updated_at'], 'M d, Y H:i'); ?></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>

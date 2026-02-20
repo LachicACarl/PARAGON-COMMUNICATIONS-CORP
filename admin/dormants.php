@@ -34,9 +34,26 @@ $totalDormants = getRow($pdo, "SELECT COUNT(*) as count FROM client_accounts WHE
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dormants Per Area - PARAGON</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="../assets/style.css">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
+      .material-icons {
+        font-family: 'Material Icons';
+        font-weight: normal;
+        font-style: normal;
+        font-size: 24px;
+        display: inline-block;
+        line-height: 1;
+        text-transform: none;
+        letter-spacing: normal;
+        word-wrap: normal;
+        white-space: nowrap;
+        direction: ltr;
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+        -moz-osx-font-smoothing: grayscale;
+        font-feature-settings: 'liga';
+      }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: #f4f6fb;
@@ -130,6 +147,7 @@ $totalDormants = getRow($pdo, "SELECT COUNT(*) as count FROM client_accounts WHE
             font-weight: bold;
         }
     </style>
+    <link rel="stylesheet" href="../assets/tailwind-compat.css">
 </head>
 <body>
     <button class="mobile-menu-toggle" onclick="toggleMobileSidebar()">
@@ -138,45 +156,137 @@ $totalDormants = getRow($pdo, "SELECT COUNT(*) as count FROM client_accounts WHE
     <div class="mobile-overlay" onclick="closeMobileSidebar()"></div>
     <div class="container">
     <?php
-    $currentPage = basename($_SERVER['PHP_SELF']);
+    $currentPath = $_SERVER['PHP_SELF'];
     $userRole = getCurrentRole();
-    
-    // Define all navigation items with role restrictions
+
+    // Navigation definition
     $allNavItems = [
-      '../dashboard.php' => ['icon' => 'dashboard', 'label' => 'Dashboard', 'roles' => ['head_admin', 'admin', 'manager']],
-      '../user.php' => ['icon' => 'people', 'label' => 'User', 'roles' => ['head_admin']],
-      '../address.php' => ['icon' => 'location_on', 'label' => 'Address', 'roles' => ['head_admin']],
-      '../amountpaid.php' => ['icon' => 'checklist', 'label' => 'Amount Paid', 'roles' => ['head_admin']],
-      'installation-fee.php' => ['icon' => 'attach_money', 'label' => 'Installation Fee', 'roles' => ['head_admin']],
-      'call_out_status.php' => ['icon' => 'call', 'label' => 'Call Out Status', 'roles' => ['head_admin']],
-      'pull_out_remarks.php' => ['icon' => 'notes', 'label' => 'Pull Out Remarks', 'roles' => ['head_admin']],
-      'status_input.php' => ['icon' => 'input', 'label' => 'Status Input', 'roles' => ['head_admin']],
-      'sales_category.php' => ['icon' => 'category', 'label' => 'Sales Category', 'roles' => ['head_admin']],
-      'main_remarks.php' => ['icon' => 'edit', 'label' => 'Main Remarks', 'roles' => ['head_admin']],
-      'monitoring.php' => ['icon' => 'monitor', 'label' => 'Backend Monitoring', 'roles' => ['admin']],
-      'backend-productivity.php' => ['icon' => 'assessment', 'label' => 'Backend Productivity', 'roles' => ['admin']],
-      'dormants.php' => ['icon' => 'person_off', 'label' => 'Dormants', 'roles' => ['admin']],
-      'recallouts.php' => ['icon' => 'phone_callback', 'label' => 'Recallouts', 'roles' => ['admin']],
-      'pull-out.php' => ['icon' => 'content_paste', 'label' => 'Pull Out Report', 'roles' => ['admin', 'manager']],
-      's25-report.php' => ['icon' => 'summarize', 'label' => 'S25 Report', 'roles' => ['admin', 'manager']],
-      'daily-count.php' => ['icon' => 'today', 'label' => 'Daily Count', 'roles' => ['admin', 'manager']],
-      'visit-remarks.php' => ['icon' => 'comment', 'label' => 'Visit Remarks', 'roles' => ['admin', 'manager']],
-      '../profile.php' => ['icon' => 'person', 'label' => 'Profile', 'roles' => ['head_admin', 'admin', 'manager']],
-      '../logout.php' => ['icon' => 'logout', 'label' => 'Logout', 'roles' => ['head_admin', 'admin', 'manager']],
+      'dashboard.php' => [
+        'icon' => 'dashboard',
+        'label' => 'Dashboard',
+        'roles' => ['head_admin', 'admin', 'manager']
+      ],
+      'user.php' => [
+        'icon' => 'people',
+        'label' => 'User',
+        'roles' => ['head_admin']
+      ],
+      'address.php' => [
+        'icon' => 'location_on',
+        'label' => 'Address',
+        'roles' => ['head_admin']
+      ],
+      'amountpaid.php' => [
+        'icon' => 'checklist',
+        'label' => 'Amount Paid',
+        'roles' => ['head_admin']
+      ],
+
+      // ADMIN CONFIG PAGES
+      'admin/installation-fee.php' => [
+        'icon' => 'attach_money',
+        'label' => 'Installation Fee',
+        'roles' => ['head_admin']
+      ],
+      'admin/call_out_status.php' => [
+        'icon' => 'call',
+        'label' => 'Call Out Status',
+        'roles' => ['head_admin']
+      ],
+      'admin/pull_out_remarks.php' => [
+        'icon' => 'notes',
+        'label' => 'Pull Out Remarks',
+        'roles' => ['head_admin']
+      ],
+      'admin/status_input.php' => [
+        'icon' => 'input',
+        'label' => 'Status Input',
+        'roles' => ['head_admin']
+      ],
+      'admin/sales_category.php' => [
+        'icon' => 'category',
+        'label' => 'Sales Category',
+        'roles' => ['head_admin']
+      ],
+      'admin/main_remarks.php' => [
+        'icon' => 'edit',
+        'label' => 'Main Remarks',
+        'roles' => ['head_admin']
+      ],
+
+      // ADMIN REPORTS
+      'admin/monitoring.php' => [
+        'icon' => 'monitor',
+        'label' => 'Backend Monitoring',
+        'roles' => ['admin']
+      ],
+      'admin/backend-productivity.php' => [
+        'icon' => 'assessment',
+        'label' => 'Backend Productivity',
+        'roles' => ['admin']
+      ],
+      'admin/dormants.php' => [
+        'icon' => 'person_off',
+        'label' => 'Dormants',
+        'roles' => ['admin']
+      ],
+      'admin/recallouts.php' => [
+        'icon' => 'phone_callback',
+        'label' => 'Recallouts',
+        'roles' => ['admin']
+      ],
+
+      // ADMIN / MANAGER SHARED
+      'admin/pull-out.php' => [
+        'icon' => 'content_paste',
+        'label' => 'Pull Out Report',
+        'roles' => ['admin', 'manager']
+      ],
+      'admin/s25-report.php' => [
+        'icon' => 'summarize',
+        'label' => 'S25 Report',
+        'roles' => ['admin', 'manager']
+      ],
+      'admin/daily-count.php' => [
+        'icon' => 'today',
+        'label' => 'Daily Count',
+        'roles' => ['admin', 'manager']
+      ],
+      'admin/visit-remarks.php' => [
+        'icon' => 'comment',
+        'label' => 'Visit Remarks',
+        'roles' => ['admin', 'manager']
+      ],
+
+      // COMMON
+      'profile.php' => [
+        'icon' => 'person',
+        'label' => 'Profile',
+        'roles' => ['head_admin', 'admin', 'manager']
+      ],
+      'logout.php' => [
+        'icon' => 'logout',
+        'label' => 'Logout',
+        'roles' => ['head_admin', 'admin', 'manager']
+      ],
     ];
-    
-    // Filter navigation items based on user role
-    $navItems = array_filter($allNavItems, function($item) use ($userRole) {
-      return in_array($userRole, $item['roles']);
-    });
+
+    // Filter by role
+    $navItems = array_filter($allNavItems, fn($item) =>
+      in_array($userRole, $item['roles'])
+    );
     ?>
     <aside class="sidebar">
       <div class="logo">
-        <img src="../assets/image.png" alt="Paragon Logo">
+        <img src="<?php echo BASE_URL; ?>assets/image.png" alt="Paragon Logo">
       </div>
       <nav class="nav">
-        <?php foreach($navItems as $file => $item): ?>
-          <a href="<?php echo $file; ?>" class="<?php echo $currentPage === basename($file) ? 'active' : ''; ?>">
+        <?php foreach ($navItems as $file => $item): ?>
+          <?php
+            $fullPath = BASE_URL . $file;
+            $isActive = strpos($currentPath, $file) !== false;
+          ?>
+          <a href="<?php echo $fullPath; ?>" class="<?php echo $isActive ? 'active' : ''; ?>">
             <span class="material-icons"><?php echo $item['icon']; ?></span>
             <?php echo $item['label']; ?>
           </a>

@@ -188,7 +188,14 @@ try {
 
 } catch (Exception $e) {
     http_response_code(500);
-    echo json_encode(['error' => 'Failed to fetch data']);
+    $errorMessage = "Failed to fetch data";
     error_log("Address fetch error: " . $e->getMessage());
+    
+    // Show detailed error in development
+    if(defined('ENV') && ENV === 'development') {
+        echo json_encode(['error' => $errorMessage, 'details' => $e->getMessage()]);
+    } else {
+        echo json_encode(['error' => $errorMessage]);
+    }
 }
 ?>

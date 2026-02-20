@@ -33,164 +33,148 @@ $totalPending = getRow($pdo, "SELECT COUNT(*) as count FROM client_accounts WHER
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Daily Count Status - PARAGON</title>
-    <link rel="stylesheet" href="../assets/style.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f4f6fb;
-            margin: 0;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        
-        .header {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        
-        .header h1 {
-            color: #2573b6;
-            margin: 0 0 5px 0;
-        }
-        
-        .header .date {
-            color: #666;
-            font-size: 14px;
-        }
-        
-        .stats-section {
-            margin-bottom: 30px;
-        }
-        
-        .stats-section h2 {
-            color: #333;
-            margin-bottom: 15px;
-        }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 20px;
-        }
-        
-        .stat-card {
-            background: white;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            text-align: center;
-        }
-        
-        .stat-card h3 {
-            color: #666;
-            font-size: 13px;
-            margin: 0 0 10px 0;
-            text-transform: uppercase;
-        }
-        
-        .stat-card .value {
-            font-size: 36px;
-            font-weight: bold;
-        }
-        
-        .stat-card.active {
-            border-left: 4px solid #4CAF50;
-        }
-        
-        .stat-card.active .value {
-            color: #4CAF50;
-        }
-        
-        .stat-card.dormant {
-            border-left: 4px solid #FF9800;
-        }
-        
-        .stat-card.dormant .value {
-            color: #FF9800;
-        }
-        
-        .stat-card.inactive {
-            border-left: 4px solid #F44336;
-        }
-        
-        .stat-card.inactive .value {
-            color: #F44336;
-        }
-        
-        .stat-card.pending {
-            border-left: 4px solid #2196F3;
-        }
-        
-        .stat-card.pending .value {
-            color: #2196F3;
-        }
-        
-        .back-btn {
-            display: inline-block;
-            padding: 10px 20px;
-            background: #2573b6;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            font-weight: 600;
-        }
-    </style>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../assets/tailwind-compat.css">
 </head>
-<body>
-    <button class="mobile-menu-toggle" onclick="toggleMobileSidebar()">
+<body class="bg-gray-100 font-['Segoe_UI']">
+    <button class="md:hidden fixed top-4 left-4 z-50 p-2 bg-blue-600 text-white rounded-lg shadow-lg" onclick="toggleMobileSidebar()">
         <span class="material-icons">menu</span>
     </button>
-    <div class="mobile-overlay" onclick="closeMobileSidebar()"></div>
-    <div class="container">
+    <div class="hidden md:hidden fixed inset-0 bg-black bg-opacity-50 z-40" id="mobile-overlay" onclick="closeMobileSidebar()"></div>
+    <div class="max-w-7xl mx-auto p-5">
     <?php
-    $currentPage = basename($_SERVER['PHP_SELF']);
+    $currentPath = $_SERVER['PHP_SELF'];
     $userRole = getCurrentRole();
-    
-    // Define all navigation items with role restrictions
+
+    // Navigation definition
     $allNavItems = [
-      '../dashboard.php' => ['icon' => 'dashboard', 'label' => 'Dashboard', 'roles' => ['head_admin', 'admin', 'manager']],
-      '../user.php' => ['icon' => 'people', 'label' => 'User', 'roles' => ['head_admin']],
-      '../address.php' => ['icon' => 'location_on', 'label' => 'Address', 'roles' => ['head_admin']],
-      '../amountpaid.php' => ['icon' => 'checklist', 'label' => 'Amount Paid', 'roles' => ['head_admin']],
-      'installation-fee.php' => ['icon' => 'attach_money', 'label' => 'Installation Fee', 'roles' => ['head_admin']],
-      'call_out_status.php' => ['icon' => 'call', 'label' => 'Call Out Status', 'roles' => ['head_admin']],
-      'pull_out_remarks.php' => ['icon' => 'notes', 'label' => 'Pull Out Remarks', 'roles' => ['head_admin']],
-      'status_input.php' => ['icon' => 'input', 'label' => 'Status Input', 'roles' => ['head_admin']],
-      'sales_category.php' => ['icon' => 'category', 'label' => 'Sales Category', 'roles' => ['head_admin']],
-      'main_remarks.php' => ['icon' => 'edit', 'label' => 'Main Remarks', 'roles' => ['head_admin']],
-      'monitoring.php' => ['icon' => 'monitor', 'label' => 'Backend Monitoring', 'roles' => ['admin']],
-      'backend-productivity.php' => ['icon' => 'assessment', 'label' => 'Backend Productivity', 'roles' => ['admin']],
-      'dormants.php' => ['icon' => 'person_off', 'label' => 'Dormants', 'roles' => ['admin']],
-      'recallouts.php' => ['icon' => 'phone_callback', 'label' => 'Recallouts', 'roles' => ['admin']],
-      'pull-out.php' => ['icon' => 'content_paste', 'label' => 'Pull Out Report', 'roles' => ['admin', 'manager']],
-      's25-report.php' => ['icon' => 'summarize', 'label' => 'S25 Report', 'roles' => ['admin', 'manager']],
-      'daily-count.php' => ['icon' => 'today', 'label' => 'Daily Count', 'roles' => ['admin', 'manager']],
-      'visit-remarks.php' => ['icon' => 'comment', 'label' => 'Visit Remarks', 'roles' => ['admin', 'manager']],
-      '../profile.php' => ['icon' => 'person', 'label' => 'Profile', 'roles' => ['head_admin', 'admin', 'manager']],
-      '../logout.php' => ['icon' => 'logout', 'label' => 'Logout', 'roles' => ['head_admin', 'admin', 'manager']],
+      'dashboard.php' => [
+        'icon' => 'dashboard',
+        'label' => 'Dashboard',
+        'roles' => ['head_admin', 'admin', 'manager']
+      ],
+      'user.php' => [
+        'icon' => 'people',
+        'label' => 'User',
+        'roles' => ['head_admin']
+      ],
+      'address.php' => [
+        'icon' => 'location_on',
+        'label' => 'Address',
+        'roles' => ['head_admin']
+      ],
+      'amountpaid.php' => [
+        'icon' => 'checklist',
+        'label' => 'Amount Paid',
+        'roles' => ['head_admin']
+      ],
+
+      // ADMIN CONFIG PAGES
+      'admin/installation-fee.php' => [
+        'icon' => 'attach_money',
+        'label' => 'Installation Fee',
+        'roles' => ['head_admin']
+      ],
+      'admin/call_out_status.php' => [
+        'icon' => 'call',
+        'label' => 'Call Out Status',
+        'roles' => ['head_admin']
+      ],
+      'admin/pull_out_remarks.php' => [
+        'icon' => 'notes',
+        'label' => 'Pull Out Remarks',
+        'roles' => ['head_admin']
+      ],
+      'admin/status_input.php' => [
+        'icon' => 'input',
+        'label' => 'Status Input',
+        'roles' => ['head_admin']
+      ],
+      'admin/sales_category.php' => [
+        'icon' => 'category',
+        'label' => 'Sales Category',
+        'roles' => ['head_admin']
+      ],
+      'admin/main_remarks.php' => [
+        'icon' => 'edit',
+        'label' => 'Main Remarks',
+        'roles' => ['head_admin']
+      ],
+
+      // ADMIN REPORTS
+      'admin/monitoring.php' => [
+        'icon' => 'monitor',
+        'label' => 'Backend Monitoring',
+        'roles' => ['admin']
+      ],
+      'admin/backend-productivity.php' => [
+        'icon' => 'assessment',
+        'label' => 'Backend Productivity',
+        'roles' => ['admin']
+      ],
+      'admin/dormants.php' => [
+        'icon' => 'person_off',
+        'label' => 'Dormants',
+        'roles' => ['admin']
+      ],
+      'admin/recallouts.php' => [
+        'icon' => 'phone_callback',
+        'label' => 'Recallouts',
+        'roles' => ['admin']
+      ],
+
+      // ADMIN / MANAGER SHARED
+      'admin/pull-out.php' => [
+        'icon' => 'content_paste',
+        'label' => 'Pull Out Report',
+        'roles' => ['admin', 'manager']
+      ],
+      'admin/s25-report.php' => [
+        'icon' => 'summarize',
+        'label' => 'S25 Report',
+        'roles' => ['admin', 'manager']
+      ],
+      'admin/daily-count.php' => [
+        'icon' => 'today',
+        'label' => 'Daily Count',
+        'roles' => ['admin', 'manager']
+      ],
+      'admin/visit-remarks.php' => [
+        'icon' => 'comment',
+        'label' => 'Visit Remarks',
+        'roles' => ['admin', 'manager']
+      ],
+
+      // COMMON
+      'profile.php' => [
+        'icon' => 'person',
+        'label' => 'Profile',
+        'roles' => ['head_admin', 'admin', 'manager']
+      ],
+      'logout.php' => [
+        'icon' => 'logout',
+        'label' => 'Logout',
+        'roles' => ['head_admin', 'admin', 'manager']
+      ],
     ];
-    
-    // Filter navigation items based on user role
-    $navItems = array_filter($allNavItems, function($item) use ($userRole) {
-      return in_array($userRole, $item['roles']);
-    });
+
+    // Filter by role
+    $navItems = array_filter($allNavItems, fn($item) =>
+      in_array($userRole, $item['roles'])
+    );
     ?>
     <aside class="sidebar">
       <div class="logo">
-        <img src="../assets/image.png" alt="Paragon Logo">
+        <img src="<?php echo BASE_URL; ?>assets/image.png" alt="Paragon Logo">
       </div>
       <nav class="nav">
-        <?php foreach($navItems as $file => $item): ?>
-          <a href="<?php echo $file; ?>" class="<?php echo $currentPage === basename($file) ? 'active' : ''; ?>">
+        <?php foreach ($navItems as $file => $item): ?>
+          <?php
+            $fullPath = BASE_URL . $file;
+            $isActive = strpos($currentPath, $file) !== false;
+          ?>
+          <a href="<?php echo $fullPath; ?>" class="<?php echo $isActive ? 'active' : ''; ?>">
             <span class="material-icons"><?php echo $item['icon']; ?></span>
             <?php echo $item['label']; ?>
           </a>
@@ -198,53 +182,53 @@ $totalPending = getRow($pdo, "SELECT COUNT(*) as count FROM client_accounts WHER
       </nav>
     </aside>
     
-    <main class="main-content">
+    <main class="flex-1">
         
-        <div class="header">
-            <h1>📊 Daily Count Status</h1>
-            <div class="date">Date: <?php echo date('F d, Y'); ?></div>
+        <div class="bg-white p-5 rounded-lg shadow mb-5">
+            <h1 class="text-blue-600 text-2xl font-bold mb-1">📊 Daily Count Status</h1>
+            <div class="text-gray-600 text-sm">Date: <?php echo date('F d, Y'); ?></div>
         </div>
         
-        <div class="stats-section">
-            <h2>Today's Updates</h2>
-            <div class="stats-grid">
-                <div class="stat-card active">
-                    <h3>Active Today</h3>
-                    <p class="value"><?php echo $todayActive; ?></p>
+        <div class="mb-8">
+            <h2 class="text-gray-900 text-xl font-bold mb-4">Today's Updates</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+                <div class="bg-white p-6 rounded-lg shadow text-center border-l-4 border-green-500">
+                    <h3 class="text-gray-600 text-xs uppercase mb-3">Active Today</h3>
+                    <p class="text-green-500 text-4xl font-bold"><?php echo $todayActive; ?></p>
                 </div>
-                <div class="stat-card dormant">
-                    <h3>Dormant Today</h3>
-                    <p class="value"><?php echo $todayDormant; ?></p>
+                <div class="bg-white p-6 rounded-lg shadow text-center border-l-4 border-orange-500">
+                    <h3 class="text-gray-600 text-xs uppercase mb-3">Dormant Today</h3>
+                    <p class="text-orange-500 text-4xl font-bold"><?php echo $todayDormant; ?></p>
                 </div>
-                <div class="stat-card inactive">
-                    <h3>Inactive Today</h3>
-                    <p class="value"><?php echo $todayInactive; ?></p>
+                <div class="bg-white p-6 rounded-lg shadow text-center border-l-4 border-red-500">
+                    <h3 class="text-gray-600 text-xs uppercase mb-3">Inactive Today</h3>
+                    <p class="text-red-500 text-4xl font-bold"><?php echo $todayInactive; ?></p>
                 </div>
-                <div class="stat-card pending">
-                    <h3>Pending Today</h3>
-                    <p class="value"><?php echo $todayPending; ?></p>
+                <div class="bg-white p-6 rounded-lg shadow text-center border-l-4 border-blue-500">
+                    <h3 class="text-gray-600 text-xs uppercase mb-3">Pending Today</h3>
+                    <p class="text-blue-500 text-4xl font-bold"><?php echo $todayPending; ?></p>
                 </div>
             </div>
         </div>
         
-        <div class="stats-section">
-            <h2>Overall Status Count</h2>
-            <div class="stats-grid">
-                <div class="stat-card active">
-                    <h3>Total Active</h3>
-                    <p class="value"><?php echo $totalActive; ?></p>
+        <div class="mb-8">
+            <h2 class="text-gray-900 text-xl font-bold mb-4">Overall Status Count</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+                <div class="bg-white p-6 rounded-lg shadow text-center border-l-4 border-green-500">
+                    <h3 class="text-gray-600 text-xs uppercase mb-3">Total Active</h3>
+                    <p class="text-green-500 text-4xl font-bold"><?php echo $totalActive; ?></p>
                 </div>
-                <div class="stat-card dormant">
-                    <h3>Total Dormant</h3>
-                    <p class="value"><?php echo $totalDormant; ?></p>
+                <div class="bg-white p-6 rounded-lg shadow text-center border-l-4 border-orange-500">
+                    <h3 class="text-gray-600 text-xs uppercase mb-3">Total Dormant</h3>
+                    <p class="text-orange-500 text-4xl font-bold"><?php echo $totalDormant; ?></p>
                 </div>
-                <div class="stat-card inactive">
-                    <h3>Total Inactive</h3>
-                    <p class="value"><?php echo $totalInactive; ?></p>
+                <div class="bg-white p-6 rounded-lg shadow text-center border-l-4 border-red-500">
+                    <h3 class="text-gray-600 text-xs uppercase mb-3">Total Inactive</h3>
+                    <p class="text-red-500 text-4xl font-bold"><?php echo $totalInactive; ?></p>
                 </div>
-                <div class="stat-card pending">
-                    <h3>Total Pending</h3>
-                    <p class="value"><?php echo $totalPending; ?></p>
+                <div class="bg-white p-6 rounded-lg shadow text-center border-l-4 border-blue-500">
+                    <h3 class="text-gray-600 text-xs uppercase mb-3">Total Pending</h3>
+                    <p class="text-blue-500 text-4xl font-bold"><?php echo $totalPending; ?></p>
                 </div>
             </div>
         </div>
